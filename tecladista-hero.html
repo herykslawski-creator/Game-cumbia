@@ -245,7 +245,7 @@ footer p{margin:0 0 4px;max-width:90ch}
 </main>
 <footer>
   <p>Setlist: tema original do jogo; La Cucaracha (tradicional mexicana); Gaita del Río (composição original no estilo da cumbia de gaita colombiana); El Cóndor Pasa (Daniel Alomía Robles, 1913); En la Gruta del Rey de la Montaña (Edvard Grieg, 1875). As melodias de terceiros estão em domínio público e foram arranjadas em cumbia para o jogo.</p>
-  <p>Tudo é sintetizado ao vivo no navegador: güira, timbal, cencerro, llamador, baixo, teclado, quena e gaita.</p>
+  <p>Tudo é sintetizado ao vivo no navegador: güira, timbal, cencerro, llamador, palmas, baixo, acordeão, synth, órgão, metais, quena e gaita.</p>
 </footer>
 
 <script>
@@ -277,28 +277,39 @@ const CO_B=[['G','B4 - D5 - E5 - - -'],['D','F#5 - E5 - D5 - B4 -'],['Em','E5 - 
 const RE=[['Am','A4 B4 C5 D5 E5 C5 E5 -'],['E','D#5 B4 D#5 - D5 A#4 D5 -'],['Am','A4 B4 C5 D5 E5 C5 E5 A5'],['Am','G5 E5 C5 E5 G5 - - -'],
   ['E','E5 F#5 G#5 A5 B5 G#5 B5 -'],['E','C6 G#5 C6 - B5 G#5 B5 -'],['E','E5 F#5 G#5 A5 B5 G#5 B5 -'],['E','C6 G#5 C6 - B5 - - -']];
 const intro1=c=>({bars:[[c]]});
+/* duelo: o rival toca a frase e você repete (cada riff tem 2 compassos) */
+const TE_DUEL=[[['Am','A4 C5 E5 C5 A4 - . .'],['G','G4 B4 D5 B4 G4 - . .']],[['F','F5 E5 D5 C5 A4 - C5 -'],['E','B4 G#4 E4 G#4 B4 - E5 -']]];
+const CU_DUEL=[[['C','C5 E5 G5 E5 C5 - G4 -'],['G','B4 D5 F5 D5 B4 - G4 -']],[['C','E5 E5 E5 G5 - - C5 -'],['C','C6 - G5 - E5 - C5 -']]];
+const GA_DUEL=[[['Dm','D5 F5 A5 F5 D5 - - .'],['A','C#5 E5 G5 E5 C#5 - - .']],[['Dm','A5 G5 F5 E5 D5 E5 F5 -'],['A','E5 D5 C#5 B4 A4 - - -']]];
+const CO_DUEL=[[['Em','E5 G5 B5 G5 E5 - - .'],['D','D5 F#5 A5 F#5 D5 - - .']],[['C','C5 E5 G5 E5 C5 - B4 -'],['B','B4 D#5 F#5 D#5 B4 - - -']]];
+const RE_DUEL=[[RE[0],RE[1]],[RE[4],RE[5]]];
 const SONGS=[
-  {id:'tema',short:'Tema',title:'Cumbia Hero',origin:'Tema original do jogo',mood:'Empolgante',mc:'--magenta',bpm:118,style:'cumbia',voice:'teclado',rival:'El Rayo',
-    parts:[intro1('Am'),{bars:TE_H},{bars:[['E','A5 G5 E5 D5 C5 B4 A4 G#4']],cut:true,banner:'¡CORTE!'},
-      {bars:TE_SOLO,fx:'bend',drive:true,banner:'¡SOLO DE TECLADO!'},{bars:TE_ECO,fx:'eco',banner:'¡ECO, ECO, ECO!'},
-      {bars:TE_H,gold:true,drive:true,fx:'oct',banner:'¡TODO EL MUNDO A BAILAR!'},{bars:[['Am','A4 . A5 . E5 . A5 -'],['Am']],cut:true}]},
-  {id:'cucaracha',short:'Cucaracha',title:'La Cucaracha',origin:'Tradicional mexicana',mood:'Contagiante',mc:'--lime',bpm:122,style:'cumbia',voice:'teclado',rival:'La Tecla Loca',
-    parts:[intro1('C'),{bars:CU_A},{bars:CU_SOLO,fx:'bend',drive:true,banner:'¡SOLO DE TECLADO!'},
-      {bars:[['G','G4 G4 G4 B4 . D5 . G5']],cut:true,banner:'¡CORTE!'},{bars:CU_ECO,fx:'eco',banner:'¡ECO, ECO, ECO!'},
-      {bars:CU_A,gold:true,drive:true,fx:'oct',banner:'¡ARRIBA, ARRIBA!'},{bars:[['C','C5 . G4 . C5 . C6 -'],['C']],cut:true}]},
-  {id:'gaita',short:'Gaita',title:'Gaita del Río',origin:'Original, estilo cumbia de gaita',mood:'Festa',mc:'--orange',bpm:116,style:'gaita',voice:'gaita',rival:'Don Gaitero',
-    parts:[intro1('Dm'),{bars:GA_A},{bars:GA_B,fx:'wah',drive:true,banner:'¡QUE SUENE LA GAITA!'},
-      {bars:[['A','A5 A5 . A5 G5 F5 E5 C#5']],cut:true,banner:'¡CORTE!'},
-      {bars:GA_A,gold:true,drive:true,fx:'eco',banner:'¡ECO, ECO, ECO!'},{bars:[['Dm','D5 . A4 . D5 . D6 -'],['Dm']],cut:true}]},
-  {id:'condor',short:'Cóndor',title:'El Cóndor Pasa',origin:'D. Alomía Robles, 1913',mood:'Melancólica',mc:'--teal',bpm:92,style:'triste',voice:'quena',rival:'El Cóndor Negro',
+  {id:'tema',short:'Tema',title:'Cumbia Hero',origin:'Tema original do jogo',mood:'Empolgante',mc:'--magenta',bpm:118,style:'cumbia',voice:'acordeon',rival:'El Rayo',rivalVoice:'metais',
+    parts:[intro1('Am'),{bars:TE_H},{bars:[['E','A5 G5 E5 D5 C5 B4 A4 G#4']],cut:true,voice:'chiclete',banner:'¡CORTE!'},
+      {bars:TE_SOLO,fx:'bend',drive:true,voice:'chiclete',banner:'¡SOLO DE TECLADO!'},
+      {duel:TE_DUEL,drive:true,voice:'organo',gold:true,banner:'¡DUELO!'},
+      {bars:TE_H,gold:true,drive:true,fx:'oct',banner:'¡TODO EL MUNDO A BAILAR!'},{bars:[['Am','A4 . A5 . E5 . A5 -'],['Am']],cut:true,fx:'eco'}]},
+  {id:'cucaracha',short:'Cucaracha',title:'La Cucaracha',origin:'Tradicional mexicana',mood:'Contagiante',mc:'--lime',bpm:122,style:'cumbia',voice:'metais',rival:'La Tecla Loca',rivalVoice:'chiclete',
+    parts:[intro1('C'),{bars:CU_A},{bars:CU_SOLO,fx:'bend',drive:true,voice:'chiclete',banner:'¡SOLO DE TECLADO!'},
+      {bars:[['G','G4 G4 G4 B4 . D5 . G5']],cut:true,voice:'organo',banner:'¡CORTE!'},
+      {duel:CU_DUEL,drive:true,voice:'acordeon',gold:true,banner:'¡DUELO!'},
+      {bars:CU_A,gold:true,drive:true,voice:'acordeon',fx:'oct',banner:'¡ARRIBA, ARRIBA!'},{bars:[['C','C5 . G4 . C5 . C6 -'],['C']],cut:true,fx:'eco'}]},
+  {id:'gaita',short:'Gaita',title:'Gaita del Río',origin:'Original, estilo cumbia de gaita',mood:'Festa',mc:'--orange',bpm:116,style:'gaita',voice:'gaita',rival:'Don Gaitero',rivalVoice:'acordeon',
+    parts:[intro1('Dm'),{bars:GA_A},{bars:GA_B.slice(0,4),fx:'wah',drive:true,voice:'organo',banner:'¡QUE SUENE EL ÓRGANO!'},
+      {bars:[['A','A5 A5 . A5 G5 F5 E5 C#5']],cut:true,voice:'chiclete',banner:'¡CORTE!'},
+      {duel:GA_DUEL,drive:true,voice:'metais',gold:true,banner:'¡DUELO!'},
+      {bars:GA_A,gold:true,drive:true,fx:'eco'},{bars:[['Dm','D5 . A4 . D5 . D6 -'],['Dm']],cut:true}]},
+  {id:'condor',short:'Cóndor',title:'El Cóndor Pasa',origin:'D. Alomía Robles, 1913',mood:'Melancólica',mc:'--teal',bpm:92,style:'triste',voice:'quena',rival:'El Cóndor Negro',rivalVoice:'organo',
     parts:[intro1('Em'),{bars:CO_A},{bars:CO_B.slice(0,4),fx:'eco'},
       {bars:[['Em','B4 D5 E5 G5 F#5 E5 D5 B4']],cut:true,banner:'¡AHORA SÍ, CUMBIA!'},
-      {bars:CO_B,bpm:116,style:'cumbia',drive:true,fx:'bend',gold:true},{bars:CO_A.slice(4),bpm:116,style:'cumbia',drive:true,fx:'oct'},
-      {bars:[['Em','E5 - B4 - E4 - - -'],['Em']],bpm:116,cut:true}]},
-  {id:'rey',short:'Rey',title:'El Rey de la Montaña',origin:'E. Grieg, 1875 · chefão final',mood:'Luta',mc:'--sun',bpm:110,style:'luta',voice:'teclado',rival:'EL REY',
-    parts:[intro1('Am'),{bars:RE.slice(0,4),banner:'ROUND 1'},{bars:RE.slice(4),bpm:124,banner:'ROUND 2'},
-      {bars:RE,bpm:140,fx:'bend',drive:true,banner:'ROUND 3'},{bars:[['E','B5 G#5 E5 B4 G#4 E4 G#4 B4']],bpm:140,cut:true,banner:'¡ROUND FINAL!'},
-      {bars:RE,bpm:165,gold:true,drive:true,fx:'oct'},{bars:[['Am','A4 C5 E5 A5 - - - -'],['Am']],bpm:165,cut:true,banner:'¡K.O.!'}]}
+      {duel:CO_DUEL,bpm:116,style:'cumbia',drive:true,voice:'acordeon',gold:true,banner:'¡DUELO!'},
+      {bars:CO_A.slice(4),bpm:116,style:'cumbia',drive:true,voice:'metais',fx:'oct',gold:true},
+      {bars:[['Em','E5 - B4 - E4 - - -'],['Em']],bpm:116,cut:true,fx:'eco'}]},
+  {id:'rey',short:'Rey',title:'El Rey de la Montaña',origin:'E. Grieg, 1875 · chefão final',mood:'Luta',mc:'--sun',bpm:110,style:'luta',voice:'organo',rival:'EL REY',rivalVoice:'metais',
+    parts:[intro1('Am'),{bars:RE.slice(0,4),banner:'ROUND 1'},{bars:RE.slice(4),bpm:124,voice:'acordeon',banner:'ROUND 2'},
+      {duel:RE_DUEL,bpm:140,fx:'bend',drive:true,voice:'chiclete',gold:true,banner:'DUELO CONTRA EL REY'},
+      {bars:[['E','B5 G#5 E5 B4 G#4 E4 G#4 B4']],bpm:140,cut:true,voice:'metais',banner:'¡ROUND FINAL!'},
+      {bars:RE,bpm:165,gold:true,drive:true,voice:'chiclete',fx:'oct'},{bars:[['Am','A4 C5 E5 A5 - - - -'],['Am']],bpm:165,cut:true,voice:'metais',banner:'¡K.O.!'}]}
 ];
 /*END*/
 const DIFFS=[{name:'Fácil',lanes:3},{name:'Médio',lanes:4},{name:'Difícil',lanes:5}];
@@ -313,6 +324,8 @@ function backing(style,bt,e8,c,back,o){
     return;
   }
   for(let b=0;b<4;b++){P(b*2,'guiraL');P(b*2+1,'guiraS');P(b*2+1.5,'guiraS');if(style!=='gaita')P(b*2+1,'stab',{n:c.n})}
+  // palmas da galera nos tempos 2 e 4; com a banda pesada, em todos
+  (o.drive?[0,2,4,6]:[2,6]).forEach(s=>P(s,'clap'));
   P(0,'kick');P(4,'kick');P(2,'timbal');P(6,'timbal');
   if(style==='gaita'){[1,3,5,7].forEach(s=>P(s,'llamador'));P(0,'tambora');P(2.5,'tambora',{v:.6});P(4,'tambora');P(6.5,'tambora',{v:.6})}
   else{P(3,'bell');P(7,'bell')}
@@ -327,13 +340,22 @@ function backing(style,bt,e8,c,back,o){
 function compile(song,di){
   const NL=DIFFS[di].lanes,mel=[],back=[],beats=[],banners=[];
   let cur=0,last=null,firstBpm=song.bpm;
-  song.parts.forEach((p,pi)=>{
-    const e8=60/(p.bpm||song.bpm)/2,style=p.style||song.style,nextCut=song.parts[pi+1]&&!song.parts[pi+1].cut;
-    banners.push({t:cur,txt:p.banner||'',cut:!!p.cut,drive:!!p.drive});
+  // o duelo vira compassos alternados: rival toca a frase, você repete
+  const parts=[];
+  song.parts.forEach(p=>{
+    if(!p.duel){parts.push(p);return}
+    p.duel.forEach((riff,i)=>{
+      parts.push(Object.assign({},p,{duel:null,bars:riff,rival:true,gold:false,banner:i===0?(p.banner||'¡DUELO!'):'',turn:'VEZ DE '+song.rival.toUpperCase()}));
+      parts.push(Object.assign({},p,{duel:null,bars:riff,rival:false,banner:'',turn:'¡SUA VEZ! REPITA'}));
+    });
+  });
+  parts.forEach((p,pi)=>{
+    const e8=60/(p.bpm||song.bpm)/2,style=p.style||song.style,nextCut=parts[pi+1]&&!parts[pi+1].cut;
+    banners.push({t:cur,txt:p.banner||'',cut:!!p.cut,drive:!!p.drive,turn:p.turn||''});
     p.bars.forEach(([ch,ml],bi)=>{
       const bt=cur;
-      if(p.cut)back.push({t:bt,k:'horn'});
-      else{backing(style,bt,e8,CH[ch],back,{drive:p.drive,fill:bi===p.bars.length-1&&pi>0&&nextCut});if(p.drive&&bi===0)back.push({t:bt,k:'crash'})}
+      if(p.cut){back.push({t:bt,k:'horn'});[0,2,4,6].forEach(s=>back.push({t:bt+s*e8,k:'clap',v:1.2}))}
+      else{backing(style,bt,e8,CH[ch],back,{drive:p.drive,fill:!p.turn&&bi===p.bars.length-1&&pi>0&&nextCut});if(p.drive&&bi===0)back.push({t:bt,k:'crash'})}
       for(let b=0;b<4;b++)beats.push({t:bt+b*2*e8,bar:b===0});
       if(ml){
         const tk=ml.trim().split(/\s+/);
@@ -341,7 +363,7 @@ function compile(song,di){
         tk.forEach((x,i)=>{
           if(x==='.'){last=null;return}
           if(x==='-'){if(last)last.d+=e8;return}
-          last={t:bt+i*e8,m:midi(x),d:e8,e8,step:i,gold:!!p.gold,fx:p.fx||''};mel.push(last);
+          last={t:bt+i*e8,m:midi(x),d:e8,e8,step:i,gold:!!p.gold,fx:p.fx||'',vk:p.rival?song.rivalVoice:(p.voice||song.voice),rival:!!p.rival};mel.push(last);
         });
       }else last=null;
       cur+=8*e8;
@@ -351,14 +373,16 @@ function compile(song,di){
   back.sort((a,b)=>a.t-b.t);
   // a dificuldade só muda quantas notas viram botões; a melodia toca inteira sempre
   const isHold=n=>n.d>=2*n.e8-1e-6;
-  let ch=mel.filter(n=>di===2||(di===1?n.step%2===0||isHold(n):n.step%4===0||(isHold(n)&&n.step%2===0)));
+  let ch=mel.filter(n=>!n.rival).filter(n=>di===2||(di===1?n.step%2===0||isHold(n):n.step%4===0||(isHold(n)&&n.step%2===0)));
   if(di===0){const o=[];ch.forEach(n=>{const p=o[o.length-1];if(!p||n.t-p.t>=2*n.e8-1e-6)o.push(n)});ch=o}
   const uniq=[...new Set(ch.map(n=>n.m))].sort((a,b)=>a-b),cnt={},laneOf={};
   ch.forEach(n=>cnt[n.m]=(cnt[n.m]||0)+1);
   let acc=0;uniq.forEach((m,r)=>{laneOf[m]=uniq.length<=NL?r:Math.min(NL-1,Math.floor((acc+cnt[m]/2)/ch.length*NL));acc+=cnt[m]});
   const notes=ch.map(n=>{const hold=isHold(n);return {t:n.t,m:n.m,lane:laneOf[n.m],gold:n.gold,hold,end:hold?n.t+n.d-n.e8*.5:n.t,res:null,mel:n}});
+  const near=m=>uniq.reduce((a,b)=>Math.abs(b-m)<Math.abs(a-m)?b:a,uniq[0]);
+  const ghosts=mel.filter(n=>n.rival).map(n=>({t:n.t,lane:laneOf[near(n.m)],done:false}));
   const e8a=60/firstBpm/2;
-  return {notes,back,beats,banners,NL,end:cur+.6,countStart:(song.parts[0].bars.length-1)*8*e8a,beat:2*e8a};
+  return {notes,ghosts,back,beats,banners,NL,end:cur+.6,countStart:(song.parts[0].bars.length-1)*8*e8a,beat:2*e8a};
 }
 
 /* ================= áudio ================= */
@@ -433,7 +457,11 @@ const SYN={
     const g=AC.createGain();g.gain.setValueAtTime(.0001,t+o);g.gain.exponentialRampToValueAtTime(.2,t+o+.015);g.gain.setValueAtTime(.2,t+o+d);g.gain.exponentialRampToValueAtTime(.0001,t+o+d+.06);bp.connect(g).connect(master);
     [466,471,932].forEach(f=>{const x=osc('sawtooth',f,t+o,d+.1,bp);x.frequency.setValueAtTime(f,t+o);x.frequency.linearRampToValueAtTime(f*.96,t+o+d)})});noise(t,.6,1500,'bandpass',.6,.12,.02,master)},
   pad:(t,e)=>{const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.06,t+e.d*.3);g.gain.setTargetAtTime(.0001,t+e.d*.85,.15);lp.connect(g).connect(backBus);e.n.forEach(m=>{osc('triangle',hz(m),t,e.d+.6,lp);osc('sawtooth',hz(m)*1.003,t,e.d+.6,lp)})},
-  mel:(t,e)=>{e.n.voice=voice(G.song.voice,e.n.m,t,Math.max(.12,e.n.d*.93),e.n.fx)}
+  mel:(t,e)=>{e.n.voice=voice(e.n.vk,e.n.m,t,Math.max(.12,e.n.d*.93),e.n.fx)},
+  // palmas: várias pessoas batendo quase juntas; mais forte com a galera animada
+  clap:(t,e)=>{const h=G.state==='play'?G.health:50;if(h<15)return;const a=(.25+h/100*.75)*V(e);
+    for(let i=0;i<4;i++){const tt=t+Math.random()*.018;noise(tt,.05,1300+Math.random()*900,'bandpass',1.4,.1*a,.001)}
+    noise(t+.012,.14,1100,'bandpass',.9,.05*a,.004)}
 };
 /* vozes da melodia: teclado de cumbia, quena andina e gaita colombiana. bend() é o efeito de tremer o dedo */
 function voice(kind,m,t,dur,fx){
@@ -442,18 +470,39 @@ function voice(kind,m,t,dur,fx){
   const add=(type,fr,det,gain)=>{const o=AC.createOscillator();o.type=type;o.frequency.value=fr;o.detune.value=det;o._b=det;
     const og=AC.createGain();og.gain.value=gain;o.connect(og).connect(lp);o.start(t);o.stop(t+dur+.5);oscs.push(o);return o};
   const lfo=AC.createOscillator(),lg=AC.createGain();lfo.connect(lg);lfo.start(t);lfo.stop(t+dur+.5);
+  const shape=(a,peak,sus,at)=>{g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(sus,t+(at||.12))};
   if(kind==='teclado'){
     lp.frequency.value=3000;lp.Q.value=2;add('sawtooth',f,-8,1);add('sawtooth',f,8,1);add('square',f*2,0,.35);
-    lfo.frequency.value=5.6;lg.gain.value=f*.006;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.32,t+.012);g.gain.exponentialRampToValueAtTime(.2,t+.12);
+    lfo.frequency.value=5.6;lg.gain.value=f*.006;shape(.012,.32,.2);
+  }else if(kind==='acordeon'){
+    // acordeão: palhetas desafinadas (musette) com tremolo de fole
+    lp.frequency.value=2800;lp.Q.value=1;add('sawtooth',f,-14,1);add('sawtooth',f,14,.9);add('square',f,0,.3);add('sawtooth',f/2,0,.25);
+    lfo.frequency.value=6.4;lg.gain.value=f*.003;shape(.02,.3,.24,.1);
+    const tr=AC.createOscillator(),tg=AC.createGain();tr.frequency.value=7;tg.gain.value=.06;tr.connect(tg).connect(g.gain);tr.start(t);tr.stop(t+dur+.5);
+  }else if(kind==='chiclete'){
+    // synth agudo e brilhante, com uma escorregada curta no começo
+    lp.frequency.value=6000;add('square',f*2,0,.55);add('square',f*2,9,.4);add('triangle',f,0,.5);
+    lfo.frequency.value=7.5;lg.gain.value=f*.004;shape(.004,.27,.13,.16);
+    oscs.forEach(o=>{o.detune.setValueAtTime(o._b-100,t);o.detune.linearRampToValueAtTime(o._b,t+.035)});
+  }else if(kind==='organo'){
+    // órgão de cumbia peruana: harmônicos de drawbar e leslie
+    lp.frequency.value=5000;add('sine',f,0,1);add('sine',f*2,0,.65);add('sine',f*3,0,.4);add('sine',f*4,0,.3);add('square',f*2,0,.08);
+    lfo.frequency.value=6.2;lg.gain.value=f*.0025;shape(.008,.24,.21,.05);
+    const tr=AC.createOscillator(),tg=AC.createGain();tr.frequency.value=6.2;tg.gain.value=.05;tr.connect(tg).connect(g.gain);tr.start(t);tr.stop(t+dur+.5);
+  }else if(kind==='metais'){
+    // metais: o filtro abre como um sopro, com entrada levemente por baixo
+    lp.Q.value=1.5;lp.frequency.setValueAtTime(500,t);lp.frequency.exponentialRampToValueAtTime(3600,t+.07);lp.frequency.exponentialRampToValueAtTime(2200,t+.25);
+    add('sawtooth',f,-6,1);add('sawtooth',f,6,.85);add('sawtooth',f*2,0,.15);
+    lfo.frequency.value=5.2;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*.005,t+.3);shape(.04,.34,.26,.15);
+    oscs.forEach(o=>{o.detune.setValueAtTime(o._b-60,t);o.detune.linearRampToValueAtTime(o._b,t+.06)});
   }else{
     const q=kind==='quena';
     lp.frequency.value=q?2600:3400;add('triangle',f,0,1);add('sine',f*2,0,q?.25:.12);if(!q)add('square',f,0,.12);
     lfo.frequency.value=q?4.8:6.2;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*(q?.01:.005),t+.25);
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(q?.42:.38,t+(q?.06:.02));g.gain.exponentialRampToValueAtTime(q?.34:.26,t+.2);
+    shape(q?.06:.02,q?.42:.38,q?.34:.26,.2);
     noise(t,.06,f*2,'bandpass',2,q?.08:.05,.01,leadBus);
   }
-  if(fx==='oct')add('sawtooth',f*2,4,kind==='teclado'?.5:.35);
+  if(fx==='oct')add(kind==='organo'?'sine':'sawtooth',f*2,4,kind==='teclado'?.5:.35);
   oscs.forEach(o=>lg.connect(o.frequency));
   // pitch bend de tecladista: a nota entra um tom abaixo e escorrega pra cima
   if(fx==='bend')oscs.forEach(o=>{o.detune.setValueAtTime(o._b-200,t);o.detune.linearRampToValueAtTime(o._b,t+Math.min(.09,dur*.5))});
@@ -493,7 +542,7 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}
 function reset(){
   G.chart=compile(G.song,G.diff);
   Object.assign(G,{score:0,combo:0,maxCombo:0,c:{perf:0,good:0,ok:0,miss:0},health:50,son:0,sonOn:false,scan:0,nextBack:0,nextBanner:0,held:[null,null,null,null,null],shake:0,wham:0,
-    missRun:0,flash:0,rscan:0,lead:0,rv:{score:0,combo:0,p:[.74,.83,.9][G.diff]+(G.song.id==='rey'?.05:0)}});
+    missRun:0,flash:0,rscan:0,lead:0,turn:'',gscan:0,rflash:[0,0,0,0,0],rv:{score:0,combo:0,p:[.74,.83,.9][G.diff]+(G.song.id==='rey'?.05:0)}});
   fx=[];pops=[];banner=null;bubbles=[];
 }
 async function start(){
@@ -559,6 +608,10 @@ function tick(t,dt){
       if(++G.missRun===3){boo();bubble('¡UUUH!','#b9a8d6')}}
     G.scan++;
   }
+  // no duelo, o rival toca as notas dele sozinho
+  const gh=G.chart.ghosts;
+  while(G.gscan<gh.length&&gh[G.gscan].t<=t){const n=gh[G.gscan++];n.done=true;G.rflash[n.lane]=1;if(!RM)for(let i=0;i<5;i++)fx.push({x:laneX(geo(),n.lane,1),y:geo().hitY,vx:(Math.random()-.5)*80,vy:-30-Math.random()*60,life:.6,col:'#2de2c4',sz:1})}
+  G.rflash=G.rflash.map(v=>Math.max(0,v-dt*5));
   // o rival toca a mesma música ao mesmo tempo
   const rv=G.rv;
   while(G.rscan<ns.length&&ns[G.rscan].t<=t){const n=ns[G.rscan++];
@@ -578,7 +631,9 @@ function tick(t,dt){
   G.wham=Math.max(0,G.wham-dt*2.2);
   while(G.nextBanner<G.chart.banners.length&&G.chart.banners[G.nextBanner].t<=t){
     const b=G.chart.banners[G.nextBanner++];if(G.nextBanner===1)continue;
+    G.turn=b.turn;
     if(b.txt){banner={txt:b.txt,t:performance.now()};shout(b.txt,true)}
+    else if(b.turn){banner={txt:b.turn,t:performance.now()};if(b.turn[0]==='¡')cheer(.6)}
     if(b.cut||b.drive||b.txt){cheer(b.cut?1.1:.8);G.flash=RM?0:1;addHealth(4)}
   }
   G.flash=Math.max(0,G.flash-dt*3);
@@ -820,7 +875,8 @@ function draw(t,dt,now){
   const g=geo(),ch=G.chart,playing=t>-1&&ch,son=G.sonOn;
   ctx.drawImage(bg,0,0);
   // tempo do baile
-  let bp=0;if(playing){const b=ch.beats;let i=0;while(i+1<b.length&&b[i+1].t<=t)i++;bp=b[i]?Math.min(1,(t-b[i].t)/(ch.beat)):0}
+  let bp=0,bi4=0;if(playing){const b=ch.beats;let i=0;while(i+1<b.length&&b[i+1].t<=t)i++;bp=b[i]?Math.min(1,(t-b[i].t)/(ch.beat)):0;bi4=i%4}
+  const clapNow=playing&&bp<.25&&(bi4%2===1);
   const energy=playing?G.health/100:.4;
   // luzes
   if(playing){const cols=son?PAL:['#ff3d8b','#2de2c4'];for(let i=0;i<(son?5:2);i++){
@@ -845,7 +901,8 @@ function draw(t,dt,now){
         const ph=rnd()<.5,tone=['#c68a5e','#8d5a3b','#e0b48a','#6b4029'][Math.floor(rnd()*4)],shirt=['#ff3d8b','#2de2c4','#ffd23f','#9be564','#ff8c42','#7a6a92'][Math.floor(rnd()*6)],lucky=rnd();
         const jump=playing&&hype>75&&((bp<.3)!==ph)?-u:0,yy=y+jump;
         R(x,yy-4*u,3*u,4*u,shirt);R(x,yy-7*u,3*u,3*u,tone);
-        if(allUp||(playing&&hype>55&&(bp<.5)!==ph)){R(x-u,yy-9*u,u,4*u,tone);R(x+3*u,yy-9*u,u,4*u,tone);
+        if(!allUp&&clapNow&&hype>=15){R(x+u,yy-10*u,u,3*u,tone);R(x+2*u,yy-10*u,u,3*u,tone)}
+        else if(allUp||(playing&&hype>55&&(bp<.5)!==ph)){R(x-u,yy-9*u,u,4*u,tone);R(x+3*u,yy-9*u,u,4*u,tone);
           if(hype>70&&lucky<.3&&(now/250|0)%2)R(x+3*u,yy-10*u,u,u,'#ffffff')}
       }
     });
@@ -868,6 +925,9 @@ function draw(t,dt,now){
     const first=ch.notes.length?ch.notes[0].t:0;
     if(t<first-.1&&t>=ch.countStart){const bi=Math.floor((t-ch.countStart)/ch.beat);const w=['¡UNO!','¡DOS!','¡TRES!','¡CUATRO!'][bi];if(w)txt(w,iw/2,Math.round(ih*.36),PAL[(bi+1)%5],iw>200?16:8)}
     const ns=ch.notes,lw=g.hw/g.NL;
+    ch.ghosts.forEach(n=>{if(n.done||n.t>t+look)return;const d=(n.t-t)/look,p=proj(g,d),x=laneX(g,n.lane,p.s),w=Math.max(4,Math.round(lw*.78*p.s)),h=Math.max(2,Math.round(7*p.s));
+      R(x-w/2,p.y-h/2,w,1,'#2de2c4');R(x-w/2,p.y+h/2-1,w,1,'#2de2c4');R(x-w/2,p.y-h/2,1,h,'#2de2c4');R(x+w/2-1,p.y-h/2,1,h,'#2de2c4');
+      for(let yy=1;yy<h-1;yy+=2)R(x-w/2+1+(yy%4?1:0),p.y-h/2+yy,w-2,1,'rgba(45,226,196,.35)')});
     for(let i=ns.length-1;i>=0;i--){
       const n=ns[i];if(n.t>t+look+.05||n.end<t-.3)continue;
       const held=G.held[n.lane]&&G.held[n.lane].n===n;
@@ -892,6 +952,7 @@ function draw(t,dt,now){
     const x=Math.round(laneX(g,l,1)),w=Math.round(g.hw/g.NL*.8),on=pressed[l]&&G.state==='play';
     const y=g.hitY-3;R(x-w/2,y,w,1,PAL[l]);R(x-w/2,y+6,w,1,PAL[l]);R(x-w/2,y,1,7,PAL[l]);R(x+w/2-1,y,1,7,PAL[l]);
     if(on)R(x-w/2+1,y+1,w-2,5,PAL[l]+'88');
+    if(G.rflash&&G.rflash[l]>0){ctx.globalAlpha=G.rflash[l];R(x-w/2,y-1,w,9,'#2de2c4');ctx.globalAlpha=1}
   }
   // teclado
   const ky=g.hitY+9,kh=ih-ky-3,kw=g.hw/g.NL;
@@ -926,6 +987,7 @@ function draw(t,dt,now){
     ctx.font='8px "Press Start 2P", monospace';ctx.textBaseline='top';ctx.fillStyle='#140c26';
     ctx.textAlign='left';ctx.fillText('VOCÊ',6,4);ctx.textAlign='right';ctx.fillText(G.song.rival.toUpperCase(),iw-6,4);
   }
+  if(G.state==='play'&&G.turn&&(now/300|0)%3)txt(G.turn,iw/2,g.topY+46,G.turn[0]==='¡'?'#ff3d8b':'#2de2c4',8);
   if(G.state==='play'&&G.combo>=10)txt(G.combo+' COMBO',4,18,'#f7ecd0',8,'left');
   if(G.flash>0){ctx.globalAlpha=G.flash*.28;R(0,0,iw,ih,'#fff6c4');ctx.globalAlpha=1}
   if(G.state==='play'&&G.held.some(Boolean)&&G.wham<.1&&(now/400|0)%2)txt('TREME!',iw/2,g.hitY-26,'#ffd23f',8);
