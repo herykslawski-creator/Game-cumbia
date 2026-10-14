@@ -6,10 +6,10 @@ Jogo de ritmo estilo Guitar Hero de cumbia, com visual pixel art, inspirado no C
 - `index.html`: a mesma página como documento completo, para abrir localmente ou no GitHub Pages (placar fica salvo só no navegador).
 
 ## Setlist
-1. **Cumbia Hero** — tema original do jogo
-2. **La Cucaracha** — tradicional mexicana
-3. **Gaita del Río** — composição original no estilo da cumbia de gaita colombiana
-4. **El Cóndor Pasa** — Daniel Alomía Robles, 1913 (melancólica)
+1. **Cumbia Hero** — tema original, cumbia santafesina
+2. **Caramelo de Fuego** — original, cumbia santafesina
+3. **La Cucaracha** — tradicional mexicana, versão santafesina
+4. **El Cóndor Pasa** — Daniel Alomía Robles, 1913 (melancólica que vira cumbia)
 5. **El Rey de la Montaña** — Edvard Grieg, 1875 (chefão final, acelera a cada round)
 
 Melodias de terceiros em domínio público, arranjadas em cumbia. Tudo é sintetizado ao vivo com Web Audio.
