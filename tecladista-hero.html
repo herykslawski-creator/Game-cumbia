@@ -464,19 +464,24 @@ function initAudio(){
   cs.connect(c1).connect(crowdG);cs.start();
   unlockAudio();
 }
+/* sons que já terminaram são desligados do mixer; sem isso o processamento cresce durante a música até travar */
+let TRK=[];
+function track(end,...nodes){TRK.push([end,nodes])}
+function sweep(list,now){let k=0;for(const it of list){if(it[0]<now)it[1].forEach(n=>{try{n.disconnect()}catch(_){}});else list[k++]=it}list.length=k}
+setInterval(()=>{if(AC&&AC.state==='running')sweep(TRK,AC.currentTime-.1)},500);
 function env(g,t,a,peak,dec){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+dec)}
 function filt(type,freq,q,dest){const k=type+freq+'|'+q+(dest===master?'m':dest===leadBus?'l':'b');let f=FILT[k];
   if(!f){f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;f.connect(dest||backBus);FILT[k]=f}return f}
 function noise(t,dur,freq,type,q,peak,a,dest){
   const s=AC.createBufferSource();s.buffer=noiseBuf;const g=AC.createGain();env(g,t,a,peak,dur);
-  s.connect(g).connect(filt(type,freq,q,dest));s.start(t,Math.random()*.8);s.stop(t+a+dur+.02);
+  s.connect(g).connect(filt(type,freq,q,dest));s.start(t,Math.random()*.8);s.stop(t+a+dur+.02);track(t+a+dur+.1,s,g);
 }
 function crowdLevel(h){if(crowdG)crowdG.gain.setTargetAtTime(h<0?0:.012+h/100*.075,AC.currentTime,.4)}
 function whistle(t,a){const g=AC.createGain();env(g,t,.02,.05*a,.32);g.connect(master);const o=osc('sine',1900,t,.45,g);o.frequency.setValueAtTime(1900+Math.random()*300,t);o.frequency.linearRampToValueAtTime(2700,t+.12);o.frequency.linearRampToValueAtTime(2200,t+.32)}
 function cheer(a){if(!AC)return;const t=AC.currentTime;noise(t,1.4,1100,'bandpass',.5,.3*a,.12,master);
   for(let i=0;i<Math.round(1+a);i++)whistle(t+.08+Math.random()*.7,a)}
 function boo(){if(!AC)return;const t=AC.currentTime;noise(t,1,420,'lowpass',.5,.22,.25,master);const g=AC.createGain();env(g,t,.2,.05,.8);g.connect(master);const o=osc('sawtooth',170,t,1.1,g);o.frequency.setValueAtTime(170,t);o.frequency.linearRampToValueAtTime(115,t+1)}
-function osc(type,f,t,dur,dest){const o=AC.createOscillator();o.type=type;o.frequency.value=f;o.connect(dest);o.start(t);o.stop(t+dur);return o}
+function osc(type,f,t,dur,dest){const o=AC.createOscillator();o.type=type;o.frequency.value=f;o.connect(dest);o.start(t);o.stop(t+dur);track(t+dur+.05,o,dest);return o}
 function drop(type,f0,f1,t,dec,peak){const g=AC.createGain();env(g,t,.003,peak,dec);g.connect(backBus);const o=osc(type,f0,t,dec+.1,g);o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dec*.6)}
 const V=e=>e.v==null?1:e.v;
 const SYN={
@@ -514,22 +519,28 @@ const VOICES={
   quena:{w:['triangle','sine'],r:[1,2],m:[1,.25],det:0,lp:2600,a:.06,p:.42,s:.34,breath:1},
   gaita:{w:['triangle','square'],r:[1,1],m:[1,.12],det:0,lp:3400,a:.02,p:.38,s:.26}
 };
+const VC={};
+function vibCurve(base,d){const n=Math.max(8,Math.min(256,Math.ceil(d*5.8*10))),k=base+'|'+n+'|'+Math.round(d*20);if(VC[k])return VC[k];
+  const c=new Float32Array(n);for(let i=0;i<n;i++){const tt=i/(n-1)*d;c[i]=base+9*Math.min(1,tt/.25)*Math.sin(2*Math.PI*5.8*tt)}return VC[k]=c}
 function voice(kind,m,t,dur,fx,amp,lite){
   const v=VOICES[kind]||VOICES.teclado,f=hz(m),g=AC.createGain(),lp=AC.createBiquadFilter(),oscs=[],k=amp||1;
   lp.type='lowpass';lp.frequency.value=v.lp;lp.connect(g);g.connect(leadBus);if(fx==='eco')g.connect(echoIn);
   const n=lite?1:2;
   for(let i=0;i<n;i++){const o=AC.createOscillator();o.type=v.w[i];o.frequency.value=f*v.r[i];o._b=i?v.det:-v.det*(n>1?1:0);o.detune.value=o._b;
     if(v.m[i]<1){const og=AC.createGain();og.gain.value=v.m[i];o.connect(og).connect(lp)}else o.connect(lp);
-    vibG.connect(o.detune);o.start(t);o.stop(t+dur+.4);oscs.push(o)}
-  if(fx==='oct'&&!lite){const o=AC.createOscillator();o.type=kind==='organo'?'sine':'sawtooth';o.frequency.value=f*2;o._b=4;o.detune.value=4;const og=AC.createGain();og.gain.value=.35;o.connect(og).connect(lp);vibG.connect(o.detune);o.start(t);o.stop(t+dur+.4);oscs.push(o)}
+    o.start(t);o.stop(t+dur+.4);oscs.push(o)}
+  if(fx==='oct'&&!lite){const o=AC.createOscillator();o.type=kind==='organo'?'sine':'sawtooth';o.frequency.value=f*2;o._b=4;o.detune.value=4;const og=AC.createGain();og.gain.value=.35;o.connect(og).connect(lp);o.start(t);o.stop(t+dur+.4);oscs.push(o)}
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v.p*k,t+v.a);g.gain.exponentialRampToValueAtTime(v.s*k,t+v.a+.1);
   if(v.swell){lp.frequency.setValueAtTime(500,t);lp.frequency.exponentialRampToValueAtTime(3600,t+.07);lp.frequency.exponentialRampToValueAtTime(2200,t+.25)}
   if(v.breath&&!lite)noise(t,.06,1800,'bandpass',2,.06,.01,leadBus);
   const sc=fx==='bend'?-200:v.scoop||0;
   if(sc)oscs.forEach(o=>{o.detune.setValueAtTime(o._b+sc,t);o.detune.linearRampToValueAtTime(o._b,t+Math.min(fx==='bend'?.09:.05,dur*.5))});
   if(fx==='wah'){lp.Q.value=6;lp.frequency.setValueAtTime(350,t);lp.frequency.exponentialRampToValueAtTime(4200,t+Math.min(.18,dur*.6));lp.frequency.exponentialRampToValueAtTime(900,t+dur)}
+  // vibrato só durante a nota (curva de automação, sem nós extras que ficam presos)
+  const vd=dur-.12;if(vd>.12&&!lite)oscs.forEach(o=>{o.detune.setValueCurveAtTime(vibCurve(o._b,vd),t+.11,vd)});
   g.gain.setTargetAtTime(.0001,t+dur,.05);
-  return {bend(c){if(!AC)return;const n=AC.currentTime;oscs.forEach(o=>o.detune.setTargetAtTime(o._b+c,n,.015))}};
+  track(t+dur+.45,g,lp,...oscs);
+  return {bend(c){if(!AC)return;const n=AC.currentTime;oscs.forEach(o=>{try{o.detune.cancelScheduledValues(n);o.detune.setTargetAtTime(o._b+c,n,.015)}catch(_){}})}};
 }
 function sour(v){const t=AC.currentTime,g=AC.createGain();env(g,t,.005,v,.18);g.connect(master);const o=osc('sawtooth',110,t,.25,g);o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(68,t+.18)}
 /* ---------- retorno de toque: som curto + vibração ---------- */
@@ -572,8 +583,43 @@ function shout(t,force){
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(_){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}
 
+/* ---------- a música de cada rodada é gravada antes (OfflineAudioContext) e depois só tocada:
+   o celular não precisa montar centenas de sons por segundo durante o jogo ---------- */
+async function renderSong(ch,song){
+  const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)return null;
+  const sr=AC.sampleRate,off=new OC(2,Math.ceil((ch.end+2.5)*sr),sr),R={AC:off,FILT:{},TRK:[]};
+  const swap=fn=>{const save={AC,master,backBus,leadBus,echoIn,echoDl,vibG,stabLP,bassLP,bellBP,FILT,TRK};
+    ({AC,master,backBus,leadBus,echoIn,echoDl,vibG,stabLP,bassLP,bellBP,FILT,TRK}=R);
+    try{fn()}finally{Object.assign(R,{AC,master,backBus,leadBus,echoIn,echoDl,vibG,stabLP,bassLP,bellBP,FILT,TRK});({AC,master,backBus,leadBus,echoIn,echoDl,vibG,stabLP,bassLP,bellBP,FILT,TRK}=save)}};
+  swap(()=>{
+    const mg=off.createChannelMerger(2);mg.connect(off.destination);
+    const c0=off.createGain(),c1=off.createGain();c0.connect(mg,0,0);c1.connect(mg,0,1);
+    master=c0;backBus=off.createGain();backBus.gain.value=.62;backBus.connect(c0);leadBus=c1;
+    stabLP=off.createBiquadFilter();stabLP.type='lowpass';stabLP.frequency.value=2200;stabLP.connect(backBus);
+    bassLP=off.createBiquadFilter();bassLP.type='lowpass';bassLP.frequency.value=700;bassLP.connect(backBus);
+    bellBP=off.createBiquadFilter();bellBP.type='bandpass';bellBP.frequency.value=800;bellBP.Q.value=2;bellBP.connect(backBus);
+    echoIn=off.createGain();echoIn.gain.value=.6;echoDl=off.createDelay(1.5);echoDl.delayTime.value=.75*60/song.bpm;
+    const fb=off.createGain();fb.gain.value=.5;const elp=off.createBiquadFilter();elp.type='lowpass';elp.frequency.value=2600;
+    echoIn.connect(echoDl);echoDl.connect(elp);elp.connect(fb);fb.connect(echoDl);elp.connect(c1);
+  });
+  // os sons são criados aos poucos, um segundo à frente, como no jogo ao vivo
+  let i=0;const ev=ch.back;
+  const feed=until=>swap(()=>{while(i<ev.length&&ev[i].t<until){const e=ev[i++],j=HUMAN[e.k]?(Math.random()-.5)*.012:0;SYN[e.k](Math.max(0,e.t+j)+.05,e)}sweep(TRK,off.currentTime-.1)});
+  feed(1.5);
+  if(!off.suspend)return null; // navegador antigo: toca ao vivo
+  for(let x=1;x<ch.end+1;x+=1)off.suspend(x).then(()=>{feed(x+1.5);off.resume()});
+  return off.startRendering();
+}
+function playSong(buf,t0){
+  // dois tocadores do mesmo arquivo: banda (canal 0) e melodia (canal 1), que entorta no tremer do dedo e abaixa no erro
+  const mk=(chn,dest)=>{const src=AC.createBufferSource();src.buffer=buf;const sp=AC.createChannelSplitter(2);src.connect(sp);const g=AC.createGain();sp.connect(g,chn);g.connect(dest);src.start(t0-.05);return src};
+  G.srcs=[mk(0,master),mk(1,leadBus)];
+}
+function stopSong(){(G.srcs||[]).forEach(s=>{try{s.stop()}catch(_){}});G.srcs=null}
+function melBend(c){const s=G.srcs&&G.srcs[1];if(!s)return;const n=AC.currentTime;
+  if(s.detune)s.detune.setTargetAtTime(c,n,.015);else s.playbackRate.setTargetAtTime(Math.pow(2,c/1200),n,.015)}
 function reset(){
-  G.chart=compile(G.song,G.diff);
+  if(!G.chart)G.chart=compile(G.song,G.diff);
   Object.assign(G,{score:0,combo:0,maxCombo:0,c:{perf:0,good:0,ok:0,miss:0},health:50,son:0,sonOn:false,scan:0,nextBack:0,nextBanner:0,held:[null,null,null,null,null],shake:0,wham:0,
     missRun:0,flash:0,rscan:0,lead:0,turn:'',gscan:0,rflash:[0,0,0,0,0],rv:{score:0,combo:0,p:[.74,.83,.9][G.diff]+(G.song.id==='rey'?.05:0)}});
   fx=[];pops=[];banner=null;bubbles=[];
@@ -581,12 +627,17 @@ function reset(){
 async function start(){
   initAudio();
   try{await Promise.race([AC.resume(),new Promise(r=>setTimeout(r,400))])}catch(_){}
+  const round=G.round;
+  if(G.rendering&&!G.buf){$('introRound').textContent='AFINANDO OS TECLADOS…';G.buf=await G.rendering}
+  if(G.state!=='intro'||G.round!==round)return;
   reset();buildBg();
   master.gain.cancelScheduledValues(AC.currentTime);master.gain.setValueAtTime(.85,AC.currentTime);duck(false);
   G.lat=(AC.outputLatency||0)+(AC.baseLatency||0);
   echoDl.delayTime.setValueAtTime(.75*60/G.song.bpm,AC.currentTime);crowdLevel(G.health);
   G.t0=AC.currentTime+.25;
   G.perfStart=performance.now()/1000+.25;
+  stopSong();
+  if(G.buf){playSong(G.buf,G.t0);G.nextBack=G.chart.back.length}
   G.state='play';
   show(null);$('hud').hidden=false;
 }
@@ -596,7 +647,9 @@ function show(id){SCREENS.forEach(s=>$(s).hidden=s!==id)}
 function goTitle(){clearTimeout(G.introTimer);G.state='menu';$('hud').hidden=true;show('sTitle')}
 function beginCampaign(){G.round=0;G.camp={total:0,res:[]};startRound()}
 function startRound(){
-  G.song=SONGS[G.round];G.chart=null;B.song=G.song.id;syncTabs();watch();
+  G.song=SONGS[G.round];G.buf=null;B.song=G.song.id;syncTabs();watch();initAudio();
+  const pre=G.pre&&G.pre.round===G.round&&G.pre.diff===G.diff?G.pre:null;G.pre=null;
+  if(pre){G.chart=pre.chart;G.rendering=pre.p}else{G.chart=compile(G.song,G.diff);G.rendering=renderSong(G.chart,G.song).catch(()=>null)}
   $('introRound').textContent=`RODADA ${G.round+1} DE ${SONGS.length}`;
   $('introMe').textContent=nickVal().toUpperCase();$('introRival').textContent=G.song.rival.toUpperCase();
   $('introSong').textContent=G.song.title;
@@ -662,7 +715,7 @@ function press(l){
   if(best)judge(best,t-best.t,t);
   else if(ns.length&&t>ns[0].t-.3){G.combo=0;addHealth(-3);sour(.05);pop(l,'×','#7a6a92')}
 }
-function endHold(l){const h=G.held[l];if(!h)return;if(h.n.mel.voice)h.n.mel.voice.bend(0);G.held[l]=null}
+function endHold(l){const h=G.held[l];if(!h)return;if(G.srcs)melBend(0);else if(h.n.mel.voice)h.n.mel.voice.bend(0);G.held[l]=null}
 function release(l){pressed[l]=false;if(G.held&&G.held[l])endHold(l)}
 function tick(t,dt){
   const ns=G.chart.notes;
@@ -688,7 +741,7 @@ function tick(t,dt){
     if(!h)return;
     const u=Math.min(t,h.n.end);
     if(u>h.last){G.score+=(u-h.last)*120*mult()*(1+G.wham*.5);if(h.n.gold&&G.wham>.15)G.son=Math.min(100,G.son+(u-h.last)*30*G.wham);h.last=u}
-    if(h.n.mel.voice)h.n.mel.voice.bend(bends);
+    if(G.srcs)melBend(bends);else if(h.n.mel.voice)h.n.mel.voice.bend(bends);
     if(G.wham>.2&&!RM&&Math.random()<.5)spark(l);
     if(t>=h.n.end){endHold(l);burst(l,false)}
   });
@@ -716,6 +769,7 @@ async function resume(){
 function silence(){if(AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setTargetAtTime(0,AC.currentTime,.03)}}
 function quit(){
   if(AC&&AC.state==='suspended')AC.resume();
+  stopSong();
   silence();crowdLevel(-1);try{speechSynthesis.cancel()}catch(_){}
   goTitle();
 }
@@ -729,7 +783,7 @@ function rating(acc){
   return 'Tecladista de Garagem';
 }
 function finish(){
-  G.state='results';$('hud').hidden=true;
+  G.state='results';stopSong();$('hud').hidden=true;
   G.held.forEach((h,l)=>h&&endHold(l));
   const total=G.chart.notes.length,acc=(G.c.perf+G.c.good*.7+G.c.ok*.4)/total,hits=G.c.perf+G.c.good+G.c.ok,score=Math.round(G.score);
   const stars=[.5,.65,.8,.9,.97].filter(x=>acc>=x).length,rs=Math.round(G.rv.score),won=score>=rs;
@@ -744,6 +798,8 @@ function finish(){
   $('resCombo').textContent=G.maxCombo;
   $('resNotes').textContent=hits+'/'+total;
   $('nextBtn').textContent=G.round<SONGS.length-1?'PRÓXIMA RODADA':'RESULTADO FINAL';
+  // grava a próxima música enquanto a pessoa olha o resultado
+  if(G.round<SONGS.length-1){const r=G.round+1,ch=compile(SONGS[r],G.diff);G.pre={round:r,diff:G.diff,chart:ch,p:renderSong(ch,SONGS[r]).catch(()=>null)}}
   if(won){cheer(1.3);SYN.horn(AC.currentTime);shout('¡Ganaste!',true)}else{boo();bubble('¡OTRA VEZ!')}
   crowdLevel(won?90:20);
   const sv=$('resSave');sv.className='';sv.textContent='Salvando no placar…';
