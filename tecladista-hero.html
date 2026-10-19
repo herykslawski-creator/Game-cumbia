@@ -3,7 +3,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Press+Start+2P&family=VT323&display=swap">
 <style>
-/* Layout: pixel-art arcade cabinet. Poster header, then the stage (low-res canvas scaled with hard pixels) beside the placar; on phones everything fits one screen and the placar opens on top.
+/* Layout: one arcade cabinet centered on the page. The stage (low-res canvas scaled with hard pixels) carries every screen:
+   title scene, two short setup steps, round intro, gameplay, round result, final result. HUD shows only while playing; placar opens on top.
    One deliberate dark look: a night baile rendered like an indie 16-color game. */
 :root{
   --night:#140c26; --night-2:#21143b; --panel:#2a1f45; --ink:#f7ecd0; --muted:#b9a8d6; --line:#4a3a6e;
@@ -14,87 +15,102 @@
   --lcdf:"VT323",ui-monospace,"Courier New",monospace;
   color-scheme:dark;
 }
-html,body{background:var(--night);color:var(--ink);margin:0}
-body{font-family:var(--display);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:0 28px;
+html,body{background:var(--night);color:var(--ink);margin:0;height:100%}
+body{font-family:var(--display);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:12px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;touch-action:manipulation;
   background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:6px 6px}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px dashed var(--teal);outline-offset:3px}
 
-.poster{max-width:1180px;margin:0 auto;padding-block:20px 8px;display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 24px}
-.eyebrow{margin:0 0 6px;font:400 10px/1.6 var(--pixel);text-transform:uppercase;color:var(--teal)}
-h1{font-family:var(--display);font-weight:700;margin:0;font-size:clamp(40px,8vw,76px);line-height:.9;letter-spacing:.02em;text-wrap:balance}
-h1 .w1{color:var(--magenta);text-shadow:4px 0 0 var(--black),0 4px 0 var(--black),4px 4px 0 var(--black),8px 8px 0 var(--sun)}
-h1 .w2{color:var(--sun);text-shadow:4px 0 0 var(--black),0 4px 0 var(--black),4px 4px 0 var(--black),8px 8px 0 var(--magenta)}
-.tag{margin:0;max-width:36ch;color:var(--muted)}
-.stripes{max-width:1180px;margin:10px auto 18px;height:8px;background:repeating-linear-gradient(90deg,var(--lime) 0 16px,var(--magenta) 16px 32px,var(--sun) 32px 48px,var(--teal) 48px 64px,var(--orange) 64px 80px)}
+.cab{width:min(100%,760px);flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
 
-main{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
-@media (max-width:880px){main{grid-template-columns:minmax(0,1fr)}}
-
-.game{min-width:0;background:var(--panel);padding:10px;border:4px solid var(--black);box-shadow:8px 8px 0 var(--black)}
-.lcd{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:4px 16px;align-items:center;background:var(--lcd);padding:8px 12px;font-family:var(--lcdf);color:var(--lcd-fg);border:4px solid var(--black);margin-bottom:10px}
-.lcd .score{font-size:42px;line-height:1;font-variant-numeric:tabular-nums}
-.lcd .combo{font-size:22px;line-height:1.05;font-variant-numeric:tabular-nums}
-.lcd .combo b{font-weight:400;color:var(--sun);font-size:28px}
+/* HUD: só durante a música */
+.lcd{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:2px 12px;align-items:center;background:var(--lcd);padding:6px 10px;font-family:var(--lcdf);color:var(--lcd-fg);border:4px solid var(--black)}
+.lcd .score{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.lcd .combo{font-size:18px;line-height:1.05;font-variant-numeric:tabular-nums}
+.lcd .combo b{font-weight:400;color:var(--sun);font-size:24px}
 .meters{display:grid;gap:4px;min-width:0}
-.meter{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:8px;font-size:18px;line-height:1;background:none;border:0;padding:0;text-align:left;color:var(--lcd-fg);font-family:var(--lcdf)}
-.bar{height:12px;background:var(--lcd-dim);border:2px solid var(--black);overflow:hidden}
+.meter{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:6px;font-size:16px;line-height:1;background:none;border:0;padding:0;text-align:left;color:var(--lcd-fg);font-family:var(--lcdf)}
+.bar{height:10px;background:var(--lcd-dim);border:2px solid var(--black);overflow:hidden}
 .bar i{display:block;height:100%;width:50%;background:var(--lcd-fg);transition:width .12s steps(4)}
 #sonMeter .bar i{background:var(--magenta)}
 #sonMeter.ready .bar i{background:repeating-linear-gradient(90deg,var(--lime) 0 8px,var(--magenta) 8px 16px,var(--sun) 16px 24px,var(--teal) 24px 32px)}
 #sonMeter.ready span{color:var(--sun)}
-.boardBtn{display:none}
+.pauseBtn{font:400 12px var(--pixel);background:var(--ink);color:var(--black);border:3px solid var(--black);width:40px;height:36px;padding:0}
 
-.stagewrap{position:relative;height:clamp(460px,74vh,780px);overflow:hidden;background:var(--black);touch-action:none;user-select:none;-webkit-user-select:none;border:4px solid var(--black)}
+.stagewrap{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--black);touch-action:none;user-select:none;-webkit-user-select:none;border:4px solid var(--black);box-shadow:8px 8px 0 var(--black)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-.stagewrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,0) 0 3px,rgba(0,0,0,.16) 3px 4px);z-index:1}
-#sonBtn{position:absolute;right:10px;top:10px;z-index:2;font:400 11px var(--pixel);background:var(--sun);color:var(--black);border:3px solid var(--black);box-shadow:4px 4px 0 var(--magenta);padding:10px 10px;animation:blink .5s steps(2) infinite}
+.stagewrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,0) 0 3px,rgba(0,0,0,.14) 3px 4px);z-index:1}
+#sonBtn{position:absolute;right:10px;top:44px;z-index:2;font:400 11px var(--pixel);background:var(--sun);color:var(--black);border:3px solid var(--black);box-shadow:4px 4px 0 var(--magenta);padding:10px;animation:blink .5s steps(2) infinite}
 @keyframes blink{50%{background:var(--magenta);color:var(--ink)}}
-.overlay{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:16px;background:rgba(11,7,22,.78);overflow-y:auto}
-.card{width:min(100%,500px);background:var(--night);border:4px solid var(--sun);box-shadow:8px 8px 0 var(--magenta);padding:16px;display:grid;gap:12px}
+
+/* telas sobre o palco */
+.screen{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;padding:16px}
+.title{justify-content:space-between;padding-top:13%;padding-bottom:20px;background:linear-gradient(rgba(11,7,22,0) 55%,rgba(11,7,22,.85) 92%)}
+.logo{text-align:center;display:grid;gap:6px}
+.logo h1{font-family:var(--display);font-weight:700;margin:0;font-size:clamp(40px,10vw,72px);line-height:.9;letter-spacing:.02em}
+.logo h1 .w1{color:var(--magenta);text-shadow:3px 0 0 var(--black),0 3px 0 var(--black),3px 3px 0 var(--black),6px 6px 0 var(--sun)}
+.logo h1 .w2{color:var(--sun);text-shadow:3px 0 0 var(--black),0 3px 0 var(--black),3px 3px 0 var(--black),6px 6px 0 var(--magenta)}
+.logo p{margin:0;font:400 9px/1.6 var(--pixel);color:var(--ink);text-shadow:2px 2px 0 var(--black);text-transform:uppercase}
+.titleActions{display:grid;justify-items:center;gap:14px}
+.play{font:400 20px var(--pixel);background:var(--magenta);color:var(--black);border:4px solid var(--black);padding:16px 34px;box-shadow:6px 6px 0 var(--sun);animation:pulse 1.1s steps(2) infinite}
+@keyframes pulse{50%{transform:translateY(-3px)}}
+.play:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--sun)}
+.links{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.link{background:none;border:0;padding:4px 0;font:400 9px var(--pixel);color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-shadow:2px 2px 0 var(--black)}
+
+.sheetWrap{justify-content:flex-end;background:linear-gradient(rgba(11,7,22,0) 30%,rgba(11,7,22,.8) 70%)}
+.card{width:min(100%,460px);background:var(--night);border:4px solid var(--sun);box-shadow:8px 8px 0 var(--magenta);padding:18px;display:grid;gap:14px}
+.step{margin:0;font:400 9px var(--pixel);color:var(--teal)}
 .card h2{font:400 15px/1.5 var(--pixel);margin:0;color:var(--sun);text-wrap:balance}
 .card p{margin:0;color:var(--muted)}
-.lbl{display:block;font:400 9px/1.6 var(--pixel);text-transform:uppercase;color:var(--teal);margin-bottom:6px}
-input#nick{width:100%;padding:8px 10px;background:var(--black);border:3px solid var(--muted);color:var(--ink);font:600 18px var(--display);border-radius:0}
-.songs{display:grid;gap:4px}
-.song{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:0 10px;text-align:left;background:var(--night-2);border:3px solid transparent;padding:6px 10px}
-.song .no{font:400 10px var(--pixel);color:var(--muted)}
-.song .t{font-weight:700;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.song .o{display:block;font-weight:400;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song .mood{font:400 8px var(--pixel);text-transform:uppercase;padding:5px 6px;color:var(--black)}
-.song[aria-pressed="true"]{border-color:var(--sun);background:#3a2260}
-.diffs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.diff{background:var(--night-2);border:3px solid var(--line);padding:6px 4px;display:grid;justify-items:center;gap:2px;line-height:1.1}
-.diff b{font:400 9px var(--pixel)}
-.diff small{font-size:13px;color:var(--muted)}
-.diff[aria-pressed="true"]{border-color:var(--teal);background:#163a44}
-.btn{font:400 14px var(--pixel);background:var(--magenta);color:var(--black);border:3px solid var(--black);padding:14px 14px;box-shadow:5px 5px 0 var(--sun)}
+input#nick{width:100%;padding:12px;background:var(--black);border:3px solid var(--muted);color:var(--ink);font:600 22px var(--display);border-radius:0}
+.diffs{display:grid;gap:8px}
+.diff{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px;text-align:left;background:var(--night-2);border:3px solid var(--line);padding:12px 14px}
+.diff b{font:400 13px var(--pixel)}
+.diff small{grid-column:1;font-size:15px;color:var(--muted)}
+.diff .keys{grid-row:1/3;grid-column:2;display:flex;gap:3px}
+.diff .keys i{display:block;width:12px;height:22px;border:2px solid var(--black)}
+.diff:hover,.diff:focus-visible{border-color:var(--teal);background:#163a44}
+.btn{font:400 14px var(--pixel);background:var(--magenta);color:var(--black);border:3px solid var(--black);padding:14px;box-shadow:5px 5px 0 var(--sun)}
 .btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--sun)}
 .btn.alt{background:var(--teal);box-shadow:5px 5px 0 var(--magenta)}
-.row{display:flex;flex-wrap:wrap;gap:12px}
+.btn:disabled{opacity:.5}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .row .btn{flex:1 1 140px}
-.hint{font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-kbd{font:400 16px var(--lcdf);min-width:22px;text-align:center;padding:0 5px;background:var(--ink);color:var(--black);border-bottom:3px solid #8d7f86}
-.touchOnly{display:none}
-.voiceBtn{justify-self:start;background:none;border:0;padding:0;font-size:14px;color:var(--teal);text-decoration:underline;text-underline-offset:3px}
-#resBattle{font-weight:700;color:var(--ink)}
-@media (pointer:coarse){.keyOnly{display:none}.touchOnly{display:flex}}
+.back{background:none;border:0;padding:0;font-size:15px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;justify-self:start}
 
-.res-score{font:400 64px/1 var(--lcdf);color:var(--lcd-fg);font-variant-numeric:tabular-nums}
+.intro{justify-content:center;background:rgba(11,7,22,.55);gap:14px;text-align:center}
+.intro .rnd{font:400 12px var(--pixel);color:var(--teal);text-shadow:2px 2px 0 var(--black)}
+.vs{display:flex;align-items:center;gap:14px;font:400 clamp(14px,4vw,22px) var(--pixel);text-shadow:3px 3px 0 var(--black)}
+.vs .me{color:var(--magenta)}.vs .x{color:var(--sun);font-size:1.4em}.vs .them{color:var(--teal)}
+.intro .song{font:700 clamp(26px,7vw,44px)/1 var(--display);color:var(--ink);text-shadow:3px 3px 0 var(--black)}
+.intro .mood{font:400 9px var(--pixel);padding:6px 8px;color:var(--black)}
+
+.overlay{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:16px;background:rgba(11,7,22,.8);overflow-y:auto}
+.res-score{font:400 60px/1 var(--lcdf);color:var(--lcd-fg);font-variant-numeric:tabular-nums}
 .stars{font:400 20px var(--pixel);letter-spacing:6px;color:var(--sun)}
 .stars .off{color:#4b3a62}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
 .stats div{background:var(--night-2);padding:8px}
 .stats dt{font:400 8px/1.5 var(--pixel);text-transform:uppercase;color:var(--muted)}
 .stats dd{margin:0;font:400 26px/1.1 var(--lcdf);font-variant-numeric:tabular-nums}
+.verdict{font:400 13px/1.5 var(--pixel);margin:0}
+.verdict.win{color:var(--lime)}.verdict.lose{color:var(--orange)}
 .saved{color:var(--lime)!important}
+.rounds{display:flex;gap:6px;flex-wrap:wrap}
+.rounds span{font:400 9px var(--pixel);padding:6px 7px;border:2px solid var(--black)}
+.rounds .w{background:var(--lime);color:var(--black)}.rounds .l{background:#4b3a62;color:var(--ink)}
 
-.board{min-width:0;background:var(--night-2);border:4px solid var(--teal);box-shadow:8px 8px 0 var(--orange);padding:16px;display:grid;gap:12px}
+/* placar por cima de tudo */
+.board{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(11,7,22,.86)}
+.board:not(.open){display:none}
+.boardCard{width:min(100%,440px);max-height:100%;overflow-y:auto;background:var(--night-2);border:4px solid var(--teal);box-shadow:8px 8px 0 var(--orange);padding:16px;display:grid;gap:12px;align-content:start}
 .board .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.board h2{font:400 18px var(--pixel);margin:0;color:var(--teal)}
-.closeBoard{display:none}
+.board h2{font:400 16px var(--pixel);margin:0;color:var(--teal)}
+.closeBoard{font:400 10px var(--pixel);background:var(--magenta);color:var(--black);border:3px solid var(--black);padding:9px 10px}
 .tabs{display:flex;gap:4px;flex-wrap:wrap}
 .tab{background:none;border:3px solid var(--line);padding:3px 8px;font-size:15px;font-weight:600;color:var(--muted)}
 .tab[aria-selected="true"]{background:var(--sun);border-color:var(--sun);color:var(--black)}
@@ -110,143 +126,143 @@ ol.rank li .n small{display:block;font-weight:400;color:var(--muted);font-size:1
 ol.rank li .s{font:400 24px var(--lcdf);font-variant-numeric:tabular-nums;color:var(--lcd-fg)}
 ol.rank li.me{background:rgba(255,61,139,.2);box-shadow:inset 4px 0 0 var(--magenta)}
 .empty{color:var(--muted);margin:0;padding:8px 0}
-.mode{font-size:14px;color:var(--muted);margin:0;border-top:3px dotted var(--line);padding-top:10px}
+.mode,.credits{font-size:14px;color:var(--muted);margin:0;border-top:3px dotted var(--line);padding-top:10px}
 .mode b{color:var(--ink)}
-footer{max-width:1180px;margin:20px auto 0;color:var(--muted);font-size:15px}
-footer p{margin:0 0 4px;max-width:90ch}
 
-/* celular: tudo numa tela só, sem rolagem; placar abre por cima */
-@media (max-width:880px){
-  html,body{height:100%;overflow:hidden}
-  body{display:flex;flex-direction:column;padding-inline:10px;padding-block:0;touch-action:manipulation}
-  .poster{padding-block:8px 0;flex:none;width:100%}
-  .poster .eyebrow,.poster .tag{display:none}
-  h1{font-size:30px}
-  h1 .w1{text-shadow:2px 2px 0 var(--black),4px 4px 0 var(--sun)}
-  h1 .w2{text-shadow:2px 2px 0 var(--black),4px 4px 0 var(--magenta)}
-  .stripes{height:4px;margin:8px 0 8px;width:100%;flex:none}
-  main{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:stretch}
-  .game{flex:1;min-height:0;display:flex;flex-direction:column;padding:5px;border-width:3px;box-shadow:none}
-  .lcd{gap:2px 10px;padding:4px 8px;margin-bottom:5px;border-width:3px}
-  .lcd .score{font-size:26px}
-  .lcd .combo{font-size:16px}.lcd .combo b{font-size:20px}
-  .meter{grid-template-columns:60px minmax(0,1fr);font-size:14px;gap:4px}
+@media (max-width:600px){
+  body{padding-inline:8px;padding-block:8px}
+  .stagewrap{border-width:3px;box-shadow:none}
+  .lcd{gap:2px 8px;padding:4px 6px;border-width:3px}
+  .lcd .score{font-size:24px}.lcd .combo{font-size:14px}.lcd .combo b{font-size:18px}
+  .meter{grid-template-columns:56px minmax(0,1fr);font-size:13px;gap:4px}
   .bar{height:8px;border-width:1px}
-  .boardBtn{display:block;font:400 9px var(--pixel);background:var(--teal);color:var(--black);border:2px solid var(--black);padding:7px 6px}
-  .stagewrap{flex:1;height:auto;min-height:0;border-width:3px}
-  footer{display:none}
-  .board{position:fixed;inset:0;z-index:20;margin:0;border:0;box-shadow:none;overflow-y:auto;align-content:start;
-    padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 14px)}
-  .board:not(.open){display:none}
-  .closeBoard{display:block;font:400 10px var(--pixel);background:var(--magenta);color:var(--black);border:3px solid var(--black);padding:9px 10px}
-  .overlay{padding:6px}
-  .card{padding:10px;gap:8px;box-shadow:4px 4px 0 var(--magenta);border-width:3px}
+  .pauseBtn{width:34px;height:30px;font-size:10px}
+  .card{padding:12px;gap:10px;box-shadow:4px 4px 0 var(--magenta);border-width:3px}
   .card h2{font-size:12px}
-  .lbl{margin-bottom:3px}
-  input#nick{padding:5px 8px;font-size:16px}
-  .song{padding:3px 8px;grid-template-columns:18px minmax(0,1fr) auto}
-  .song .t{font-size:15px}.song .o{display:none}
-  .diff{padding:4px 2px}.diff small{font-size:12px}
-  .btn{font-size:12px;padding:11px 10px}
-  .res-score{font-size:46px}
-  .stats dd{font-size:22px}
+  .diff{padding:9px 10px}.diff b{font-size:11px}.diff small{font-size:13px}
+  .play{font-size:16px;padding:14px 26px}
+  .btn{font-size:12px;padding:12px 10px}
+  .res-score{font-size:44px}.stats dd{font-size:22px}
   #sonBtn{font-size:9px;padding:8px}
 }
-@media (max-width:880px) and (max-height:640px){.lcd .combo{display:none}.hint{display:none}}
-@media (prefers-reduced-motion:reduce){.bar i{transition:none}#sonBtn{animation:none}}
+@media (max-height:620px){.lcd .combo{display:none}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}#sonBtn,.play{animation:none}}
 </style>
 
-<header class="poster">
-  <div>
-    <p class="eyebrow">Campeonato Mundial de Tecladistas de Cumbia</p>
-    <h1><span class="w1">CUMBIA</span> <span class="w2">HERO</span></h1>
+<div class="cab">
+  <div class="lcd" id="hud" hidden>
+    <div class="score" id="score">000000</div>
+    <div class="combo"><b id="mult">x1</b><br><span id="combo">0 combo</span></div>
+    <div class="meters">
+      <div class="meter"><span>GALERA</span><div class="bar"><i id="hp"></i></div></div>
+      <button class="meter" id="sonMeter" type="button" title="Ativar Modo Sonidero (Espaço)"><span id="sonLbl">SONIDERO</span><div class="bar"><i id="son" style="width:0"></i></div></button>
+    </div>
+    <button class="pauseBtn" id="pauseBtn" type="button" aria-label="Pausar">II</button>
   </div>
-  <p class="tag">Cinco faixas, uma noite de baile. Toque a melodia no tempo da güira, segure as notas longas, tremule o dedo e solte o Modo Sonidero.</p>
-</header>
-<div class="stripes" aria-hidden="true"></div>
 
-<main>
-  <section class="game" aria-label="Jogo">
-    <div class="lcd">
-      <div class="score" id="score">000000</div>
-      <div class="combo"><b id="mult">x1</b><br><span id="combo">0 combo</span></div>
-      <div class="meters">
-        <div class="meter"><span>GALERA</span><div class="bar"><i id="hp"></i></div></div>
-        <button class="meter" id="sonMeter" type="button" title="Ativar Modo Sonidero (Espaço)"><span id="sonLbl">SONIDERO</span><div class="bar"><i id="son" style="width:0"></i></div></button>
+  <div class="stagewrap" id="wrap">
+    <canvas id="cv"></canvas>
+    <button id="sonBtn" type="button" hidden>¡SONIDERO!</button>
+
+    <div class="screen title" id="sTitle">
+      <div class="logo">
+        <h1><span class="w1">CUMBIA</span> <span class="w2">HERO</span></h1>
+        <p>Campeonato Mundial de Tecladistas</p>
       </div>
-      <button class="boardBtn" id="boardBtn" type="button">PLACAR</button>
-    </div>
-    <div class="stagewrap" id="wrap">
-      <canvas id="cv"></canvas>
-      <button id="sonBtn" type="button" hidden>¡SONIDERO!</button>
-
-      <div class="overlay" id="menu">
-        <div class="card">
-          <h2>Inscrição no campeonato</h2>
-          <div>
-            <label class="lbl" for="nick">Nome de tecladista</label>
-            <input id="nick" maxlength="18" autocomplete="off" placeholder="Ex.: Mestre do Casio">
-          </div>
-          <div>
-            <span class="lbl">Setlist</span>
-            <div class="songs" id="songs"></div>
-          </div>
-          <div>
-            <span class="lbl">Dificuldade (a música é a mesma)</span>
-            <div class="diffs" id="diffs"></div>
-          </div>
-          <button class="btn" id="startBtn" type="button">SUBIR NO PALCO</button>
-          <button class="voiceBtn" id="voiceBtn" type="button" aria-pressed="true">Gritos da galera: ligados</button>
-          <div class="hint keyOnly"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> teclas · segure nas notas longas e mexa o mouse ou aperte <kbd>←</kbd><kbd>→</kbd> para tremer · <kbd>Espaço</kbd> Sonidero · <kbd>Esc</kbd> pausa</div>
-          <div class="hint touchOnly">Toque nas teclas. Nas notas longas, segure e tremule o dedo de um lado pro outro. Sem som? Tire do modo silencioso.</div>
-        </div>
-      </div>
-
-      <div class="overlay" id="pause" hidden>
-        <div class="card">
-          <h2>Intervalo do baile</h2>
-          <p>A banda está esperando você.</p>
-          <div class="row">
-            <button class="btn" id="resumeBtn" type="button">CONTINUAR</button>
-            <button class="btn alt" id="quitBtn" type="button">SAIR</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="overlay" id="results" hidden>
-        <div class="card">
-          <h2 id="resTitle">Tecladista de Baile</h2>
-          <div class="res-score" id="resScore">0</div>
-          <div class="stars" id="resStars" aria-label="Estrelas"></div>
-          <dl class="stats">
-            <div><dt>Precisão</dt><dd id="resAcc">0%</dd></div>
-            <div><dt>Combo</dt><dd id="resCombo">0</dd></div>
-            <div><dt>Notas</dt><dd id="resNotes">0/0</dd></div>
-          </dl>
-          <p id="resBattle"></p>
-          <p id="resSave">&nbsp;</p>
-          <div class="row">
-            <button class="btn" id="againBtn" type="button">DE NOVO</button>
-            <button class="btn alt" id="menuBtn" type="button">SETLIST</button>
-          </div>
+      <div class="titleActions">
+        <button class="play" id="playBtn" type="button">JOGAR</button>
+        <div class="links">
+          <button class="link" id="titleBoardBtn" type="button">PLACAR</button>
+          <button class="link" id="voiceBtn" type="button" aria-pressed="true">GRITOS: LIGADOS</button>
         </div>
       </div>
     </div>
-  </section>
 
-  <aside class="board" id="board" aria-label="Placar">
+    <div class="screen sheetWrap" id="sName" hidden>
+      <form class="card" id="nameForm">
+        <p class="step">PASSO 1 DE 2</p>
+        <h2><label for="nick">Qual é o seu nome de tecladista?</label></h2>
+        <input id="nick" maxlength="18" autocomplete="off" placeholder="Ex.: Mestre do Casio" enterkeyhint="next">
+        <div class="row"><button class="btn" id="nameBtn" type="submit">CONTINUAR</button></div>
+        <button class="back" type="button" data-back="sTitle">Voltar</button>
+      </form>
+    </div>
+
+    <div class="screen sheetWrap" id="sDiff" hidden>
+      <div class="card">
+        <p class="step">PASSO 2 DE 2</p>
+        <h2>Escolha a dificuldade</h2>
+        <p>São 5 rodadas, uma música contra cada rival. A música é a mesma em qualquer dificuldade; muda quantas notas você toca.</p>
+        <div class="diffs" id="diffs"></div>
+        <button class="back" type="button" data-back="sName">Voltar</button>
+      </div>
+    </div>
+
+    <div class="screen intro" id="sIntro" hidden>
+      <div class="rnd" id="introRound">RODADA 1 DE 5</div>
+      <div class="vs"><span class="me" id="introMe">VOCÊ</span><span class="x">VS</span><span class="them" id="introRival">EL RAYO</span></div>
+      <div class="song" id="introSong">Cumbia Hero</div>
+      <span class="mood" id="introMood">Empolgante</span>
+    </div>
+
+    <div class="overlay" id="pause" hidden>
+      <div class="card">
+        <h2>Intervalo do baile</h2>
+        <p>A banda está esperando você.</p>
+        <div class="row">
+          <button class="btn" id="resumeBtn" type="button">CONTINUAR</button>
+          <button class="btn alt" id="quitBtn" type="button">SAIR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="results" hidden>
+      <div class="card">
+        <p class="step" id="resRound">RODADA 1 DE 5</p>
+        <p class="verdict" id="resVerdict">VOCÊ VENCEU EL RAYO</p>
+        <div class="res-score" id="resScore">0</div>
+        <div class="stars" id="resStars" aria-label="Estrelas"></div>
+        <dl class="stats">
+          <div><dt>Precisão</dt><dd id="resAcc">0%</dd></div>
+          <div><dt>Combo</dt><dd id="resCombo">0</dd></div>
+          <div><dt>Notas</dt><dd id="resNotes">0/0</dd></div>
+        </dl>
+        <p id="resSave">&nbsp;</p>
+        <div class="row">
+          <button class="btn" id="nextBtn" type="button">PRÓXIMA RODADA</button>
+        </div>
+        <button class="back" id="resQuit" type="button">Sair do campeonato</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="final" hidden>
+      <div class="card">
+        <p class="step">CAMPEONATO ENCERRADO</p>
+        <h2 id="finTitle">Campeão Mundial do Teclado</h2>
+        <div class="res-score" id="finScore">0</div>
+        <div class="rounds" id="finRounds"></div>
+        <p id="finSave">&nbsp;</p>
+        <div class="row">
+          <button class="btn" id="againBtn" type="button">JOGAR DE NOVO</button>
+          <button class="btn alt" id="finBoardBtn" type="button">VER PLACAR</button>
+        </div>
+        <button class="back" id="finHome" type="button">Tela inicial</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<aside class="board" id="board" aria-label="Placar">
+  <div class="boardCard">
     <div class="head"><h2>PLACAR</h2><button class="closeBoard" id="closeBoard" type="button">FECHAR</button></div>
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="tabs small" role="tablist" id="dtabs"></div>
     <ol class="rank" id="rank"></ol>
-    <p class="empty" id="empty" hidden>Ninguém tocou essa ainda. A primeira posição está livre.</p>
+    <p class="empty" id="empty" hidden>Ninguém pontuou aqui ainda. A primeira posição está livre.</p>
     <p class="mode" id="mode">Conectando ao placar…</p>
-  </aside>
-</main>
-<footer>
-  <p>Setlist: Cumbia Hero e Caramelo de Fuego (composições originais no estilo da cumbia santafesina); La Cucaracha (tradicional mexicana); El Cóndor Pasa (Daniel Alomía Robles, 1913); En la Gruta del Rey de la Montaña (Edvard Grieg, 1875). As melodias de terceiros estão em domínio público e foram arranjadas em cumbia para o jogo.</p>
-  <p>Tudo é sintetizado ao vivo no navegador: güiro, congas, timbal, cencerro, palmas, baixo, acordeão, synth, órgão, metais, quena e gaita.</p>
-</footer>
+    <p class="credits">Músicas: Cumbia Hero e Caramelo de Fuego (originais, estilo cumbia santafesina); La Cucaracha (tradicional mexicana); El Cóndor Pasa (Daniel Alomía Robles, 1913); El Rey de la Montaña (Edvard Grieg, 1875). Tudo sintetizado ao vivo no navegador.</p>
+  </div>
+</aside>
 
 <script>
 (()=>{
@@ -570,11 +586,39 @@ async function start(){
   master.gain.cancelScheduledValues(AC.currentTime);master.gain.setValueAtTime(.85,AC.currentTime);duck(false);
   G.lat=(AC.outputLatency||AC.baseLatency||0);
   echoDl.delayTime.setValueAtTime(.75*60/G.song.bpm,AC.currentTime);crowdLevel(G.health);
-  shout('¡Bienvenidos al campeonato!',true);
   G.t0=AC.currentTime+.25;
   G.perfStart=performance.now()/1000+.25;
   G.state='play';
-  ['menu','results','pause'].forEach(id=>$(id).hidden=true);
+  show(null);$('hud').hidden=false;
+}
+/* ---------- fluxo de telas ---------- */
+const SCREENS=['sTitle','sName','sDiff','sIntro','results','final','pause'];
+function show(id){SCREENS.forEach(s=>$(s).hidden=s!==id)}
+function goTitle(){clearTimeout(G.introTimer);G.state='menu';$('hud').hidden=true;show('sTitle')}
+function beginCampaign(){G.round=0;G.camp={total:0,res:[]};startRound()}
+function startRound(){
+  G.song=SONGS[G.round];G.chart=null;B.song=G.song.id;syncTabs();watch();
+  $('introRound').textContent=`RODADA ${G.round+1} DE ${SONGS.length}`;
+  $('introMe').textContent=nickVal().toUpperCase();$('introRival').textContent=G.song.rival.toUpperCase();
+  $('introSong').textContent=G.song.title;
+  const m=$('introMood');m.textContent=G.song.mood;m.style.background=`var(${G.song.mc})`;
+  G.state='intro';$('hud').hidden=true;show('sIntro');
+  if(AC){crowdLevel(55);SYN.horn(AC.currentTime);cheer(.8)}
+  shout(G.round===0?'¡Bienvenidos al campeonato!':G.round===SONGS.length-1?'¡La gran final!':'¡Que empiece la batalla!',true);
+  clearTimeout(G.introTimer);G.introTimer=setTimeout(start,2600);
+}
+function nextRound(){G.round++;if(G.round<SONGS.length)startRound();else showFinal()}
+function showFinal(){
+  G.state='final';$('hud').hidden=true;
+  const wins=G.camp.res.filter(r=>r.won).length,total=G.camp.total;
+  $('finTitle').textContent=wins===5?'Campeão Mundial do Teclado':wins>=3?'Finalista do Campeonato':wins>=1?'Tecladista de Baile':'Tecladista de Garagem';
+  $('finScore').textContent=total.toLocaleString('pt-BR');
+  const box=$('finRounds');box.textContent='';
+  G.camp.res.forEach((r,i)=>{const sp=document.createElement('span');sp.className=r.won?'w':'l';sp.textContent=(i+1)+' '+(r.won?'VENCEU':'PERDEU');box.append(sp)});
+  const sv=$('finSave');sv.className='';sv.textContent='Salvando no placar…';
+  submit('camp_'+G.diff,{score:total,acc:Math.round(G.camp.res.reduce((a,r)=>a+r.acc,0)/G.camp.res.length*10)/10,combo:wins}).then(r=>{sv.textContent=r.msg;if(r.ok)sv.className='saved'});
+  if(wins>=3){cheer(1.4);SYN.horn(AC.currentTime);shout('¡Campeón, campeón!',true)}else boo();
+  show('final');
 }
 function songNow(){return performance.now()/1000-G.perfStart-G.lat}
 function sync(){const ac=AC.currentTime-G.t0,p=performance.now()/1000-G.perfStart;if(Math.abs(ac-p)>.04)G.perfStart=performance.now()/1000-ac}
@@ -674,7 +718,7 @@ function silence(){if(AC&&master){master.gain.cancelScheduledValues(AC.currentTi
 function quit(){
   if(AC&&AC.state==='suspended')AC.resume();
   silence();crowdLevel(-1);try{speechSynthesis.cancel()}catch(_){}
-  G.state='menu';$('pause').hidden=true;$('results').hidden=true;$('menu').hidden=false;
+  goTitle();
 }
 
 /* ================= resultado ================= */
@@ -686,28 +730,30 @@ function rating(acc){
   return 'Tecladista de Garagem';
 }
 function finish(){
-  G.state='results';
+  G.state='results';$('hud').hidden=true;
   G.held.forEach((h,l)=>h&&endHold(l));
   const total=G.chart.notes.length,acc=(G.c.perf+G.c.good*.7+G.c.ok*.4)/total,hits=G.c.perf+G.c.good+G.c.ok,score=Math.round(G.score);
-  const stars=[.5,.65,.8,.9,.97].filter(x=>acc>=x).length;
-  $('resTitle').textContent=rating(acc);
+  const stars=[.5,.65,.8,.9,.97].filter(x=>acc>=x).length,rs=Math.round(G.rv.score),won=score>=rs;
+  G.camp.total+=score;G.camp.res.push({won,score,acc:Math.round(acc*1000)/10});
+  $('resRound').textContent=`RODADA ${G.round+1} DE ${SONGS.length} · ${G.song.title.toUpperCase()}`;
+  const v=$('resVerdict');v.className='verdict '+(won?'win':'lose');
+  v.textContent=won?`VOCÊ VENCEU ${G.song.rival.toUpperCase()}`:`${G.song.rival.toUpperCase()} VENCEU (${rs.toLocaleString('pt-BR')})`;
   $('resScore').textContent=score.toLocaleString('pt-BR');
   $('resStars').textContent='';
   for(let i=0;i<5;i++){const s=document.createElement('span');s.textContent='★';if(i>=stars)s.className='off';$('resStars').append(s)}
   $('resAcc').textContent=Math.round(acc*100)+'%';
   $('resCombo').textContent=G.maxCombo;
   $('resNotes').textContent=hits+'/'+total;
-  const rs=Math.round(G.rv.score),won=score>=rs;
-  $('resBattle').textContent=won?`Você venceu a batalha contra ${G.song.rival} (${rs.toLocaleString('pt-BR')}).`:`${G.song.rival} levou essa batalha por ${(rs-score).toLocaleString('pt-BR')} pontos.`;
-  if(won){cheer(1.3);SYN.horn(AC.currentTime);shout('¡Campeón, campeón!',true)}else{boo();bubble('¡OTRA VEZ!')}
+  $('nextBtn').textContent=G.round<SONGS.length-1?'PRÓXIMA RODADA':'RESULTADO FINAL';
+  if(won){cheer(1.3);SYN.horn(AC.currentTime);shout('¡Ganaste!',true)}else{boo();bubble('¡OTRA VEZ!')}
   crowdLevel(won?90:20);
   const sv=$('resSave');sv.className='';sv.textContent='Salvando no placar…';
   submit(G.song.id+'_'+G.diff,{score,acc:Math.round(acc*1000)/10,combo:G.maxCombo}).then(r=>{sv.textContent=r.msg;if(r.ok)sv.className='saved'});
-  $('results').hidden=false;
+  show('results');
 }
 
 /* ================= placar ================= */
-const B={db:null,uid:null,readOnly:false,unsub:null,song:SONGS[0].id,diff:1};
+const B={db:null,uid:null,readOnly:false,unsub:null,song:'camp',diff:1};
 const nickVal=()=>($('nick').value.trim().replace(/\s+/g,' ').slice(0,18))||'Anônimo do Teclado';
 const bkey=()=>B.song+'_'+B.diff;
 async function submit(key,r){
@@ -718,10 +764,10 @@ async function submit(key,r){
       const old=Number(prev['s_'+key])||0;
       if(r.score>old){
         await ref.set({...prev,nick,['s_'+key]:r.score,['a_'+key]:r.acc,['c_'+key]:r.combo,['t_'+key]:Date.now()});
-        return {ok:true,msg:old?`Novo recorde! Antes era ${old.toLocaleString('pt-BR')}.`:'Você entrou no placar online!'};
+        return {ok:true,msg:old?`Novo recorde! Antes era ${old.toLocaleString('pt-BR')}.`:'Você entrou no placar!'};
       }
       if(prev.nick!==nick)await ref.set({...prev,nick});
-      return {ok:false,msg:`Seu recorde online nessa dificuldade continua ${old.toLocaleString('pt-BR')}.`};
+      return {ok:false,msg:`Seu recorde aqui continua ${old.toLocaleString('pt-BR')}.`};
     }catch(e){
       if(e&&e.code==='invalid_argument'){B.readOnly=true;setMode();return {ok:false,msg:'Você pode ver o placar, mas seu acesso não permite enviar pontos. Peça ao dono acesso de Contributor.'}}
       return {ok:false,msg:'Não deu para salvar agora. Tente de novo em instantes.'};
@@ -765,7 +811,7 @@ function syncTabs(){
   [...$('dtabs').children].forEach(x=>x.setAttribute('aria-selected',+x.dataset.d===B.diff));
 }
 function buildTabs(){
-  SONGS.forEach(s=>{const b=document.createElement('button');b.type='button';b.className='tab';b.setAttribute('role','tab');b.textContent=s.short;b.dataset.id=s.id;
+  [{id:'camp',short:'Campeonato'},...SONGS].forEach(s=>{const b=document.createElement('button');b.type='button';b.className='tab';b.setAttribute('role','tab');b.textContent=s.short;b.dataset.id=s.id;
     b.onclick=()=>{B.song=s.id;syncTabs();watch()};$('tabs').append(b)});
   DIFFS.forEach((d,i)=>{const b=document.createElement('button');b.type='button';b.className='tab';b.setAttribute('role','tab');b.textContent=d.name;b.dataset.d=i;
     b.onclick=()=>{B.diff=i;syncTabs();watch()};$('dtabs').append(b)});
@@ -783,41 +829,39 @@ async function connect(){
 }
 
 /* ================= menu ================= */
-function fmtDur(s){const t=Math.round(compile(s,2).end);return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')}
+function openBoard(){if(G.state==='play')pause();$('board').classList.add('open');$('closeBoard').focus()}
 function buildMenu(){
-  const box=$('songs');
-  SONGS.forEach((s,i)=>{
-    const b=document.createElement('button');b.type='button';b.className='song';b.setAttribute('aria-pressed',s===G.song);
-    b.innerHTML='<span class="no"></span><span><span class="t"></span><span class="o"></span></span><span class="mood"></span>';
-    b.querySelector('.no').textContent=i+1;
-    b.querySelector('.t').textContent=s.title;
-    b.querySelector('.o').textContent=s.origin+' · '+fmtDur(s);
-    const m=b.querySelector('.mood');m.textContent=s.mood;m.style.background=`var(${s.mc})`;
-    b.onclick=()=>{G.song=s;[...box.children].forEach(x=>x.setAttribute('aria-pressed',x===b));B.song=s.id;syncTabs();watch()};
-    box.append(b);
-  });
   const dbox=$('diffs');
+  const blurb=['Para começar. Só as notas no tempo forte.','O ritmo inteiro, sem as notas mais rápidas.','Todos os riffs, nota por nota.'];
   DIFFS.forEach((d,i)=>{
-    const b=document.createElement('button');b.type='button';b.className='diff';b.setAttribute('aria-pressed',i===G.diff);
-    b.innerHTML='<b></b><small></small>';b.querySelector('b').textContent=d.name.toUpperCase();b.querySelector('small').textContent=d.lanes+' teclas';
-    b.onclick=()=>{G.diff=i;[...dbox.children].forEach(x=>x.setAttribute('aria-pressed',x===b));B.diff=i;syncTabs();watch()};
+    const b=document.createElement('button');b.type='button';b.className='diff';
+    b.innerHTML='<b></b><small></small><span class="keys"></span>';
+    b.querySelector('b').textContent=d.name.toUpperCase();b.querySelector('small').textContent=blurb[i];
+    for(let k=0;k<d.lanes;k++){const x=document.createElement('i');x.style.background=PAL[k];b.querySelector('.keys').append(x)}
+    b.onclick=()=>{G.diff=i;B.diff=i;syncTabs();beginCampaign()};
     dbox.append(b);
   });
   G.voices=lsGet('ch_voices',true);
-  const vb=$('voiceBtn'),vset=()=>{vb.setAttribute('aria-pressed',G.voices);vb.textContent='Gritos da galera: '+(G.voices?'ligados':'desligados')};vset();
+  const vb=$('voiceBtn'),vset=()=>{vb.setAttribute('aria-pressed',G.voices);vb.textContent='GRITOS: '+(G.voices?'LIGADOS':'DESLIGADOS')};vset();
   vb.onclick=()=>{G.voices=!G.voices;lsSet('ch_voices',G.voices);vset();if(G.voices)shout('¡Uepa!',true)};
   $('nick').value=lsGet('ch_nick','');
-  $('nick').addEventListener('change',()=>lsSet('ch_nick',nickVal()));
-  $('startBtn').onclick=start;$('againBtn').onclick=start;$('menuBtn').onclick=quit;
-  $('resumeBtn').onclick=resume;$('quitBtn').onclick=quit;
+  $('playBtn').onclick=()=>{initAudio();show('sName');if(matchMedia('(pointer:fine)').matches)$('nick').focus()};
+  $('nameForm').onsubmit=e=>{e.preventDefault();lsSet('ch_nick',nickVal());show('sDiff');const f=$('diffs').children[G.diff];if(f)f.focus()};
+  document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(b.dataset.back));
+  $('nextBtn').onclick=nextRound;$('resQuit').onclick=quit;
+  $('againBtn').onclick=()=>show('sDiff');$('finHome').onclick=goTitle;
+  $('finBoardBtn').onclick=()=>{B.song='camp';syncTabs();watch();openBoard()};
+  $('titleBoardBtn').onclick=openBoard;
+  $('resumeBtn').onclick=resume;$('quitBtn').onclick=quit;$('pauseBtn').onclick=pause;
   $('sonMeter').onclick=activateSon;$('sonBtn').onclick=activateSon;
-  $('boardBtn').onclick=()=>{if(G.state==='play')pause();$('board').classList.add('open')};
   $('closeBoard').onclick=()=>$('board').classList.remove('open');
 }
 
 /* ================= entrada ================= */
 addEventListener('keydown',e=>{
-  if(e.target&&e.target.tagName==='INPUT'){if(e.key==='Enter'&&G.state==='menu')start();return}
+  if(e.target&&e.target.tagName==='INPUT')return;
+  if(e.code==='Escape'&&$('board').classList.contains('open')){$('board').classList.remove('open');return}
+  if(G.state==='menu'&&!$('sTitle').hidden&&(e.code==='Enter'||e.code==='Space')&&e.target===document.body){$('playBtn').click();e.preventDefault();return}
   if(e.code in KEYMAP){if(!e.repeat)press(KEYMAP[e.code]);e.preventDefault();return}
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','ShiftLeft','ShiftRight'].includes(e.code)){wham(.45);if(G.state==='play')e.preventDefault();return}
   if(e.code==='Space'&&G.state==='play'){activateSon();e.preventDefault();return}
@@ -1014,6 +1058,77 @@ function draw(t,dt,now){
   if(G.state==='play'&&G.held.some(Boolean)&&G.wham<.1&&(now/400|0)%2)txt('TREME!',iw/2,g.hitY-26,'#ffd23f',8);
 }
 
+/* ---------- tela inicial: dois tecladistas frente a frente, torcida atrás ---------- */
+const SKIN=['#e0b48a','#c68a5e','#8d5a3b','#f1c9a5'];
+// sprites em unidades, pés na origem, olhando para a direita: [x,y,w,h,cor] (y negativo = para cima; y<-14 balança no ritmo)
+const P1=[[-4,-1,4,1,'#f2f2f2'],[1,-1,4,1,'#f2f2f2'],[-4,-14,3,13,'#15131a'],[1,-14,3,13,'#15131a'],
+  [-4,-26,9,12,'#1c1a22'],[-2,-22,5,1,'#e8e8e8'],[-2,-20,3,1,'#e8e8e8'],
+  [3,-25,3,6,'#1c1a22'],[5,-20,8,2,'#1c1a22'],[13,-20,2,2,'#e0b48a'],
+  [-2,-32,6,6,'#e0b48a'],[-2,-28,6,2,'#7a5238'],[3,-30,1,1,'#0b0716'],[-3,-34,8,2,'#f5f5f5'],[5,-33,3,1,'#f5f5f5']];
+const P2=[[-4,-1,4,1,'#3a6fd8'],[1,-1,4,1,'#3a6fd8'],[-4,-14,3,13,'#2a2d36'],[1,-14,3,13,'#2a2d36'],
+  [-4,-26,9,12,'#f3f3f3'],[-1,-22,3,2,'#3a3a44'],
+  [3,-25,3,4,'#f3f3f3'],[5,-21,8,2,'#c68a5e'],[13,-21,2,2,'#c68a5e'],
+  [-2,-32,6,6,'#c68a5e'],[3,-30,1,1,'#0b0716'],[-3,-34,8,2,'#8a8f99'],[5,-33,3,1,'#8a8f99'],[-5,-33,2,3,'#d33b3b'],[-5,-30,1,2,'#2de2c4']];
+function sprite(list,x0,y0,u,flip,bob,hand){
+  list.forEach(([x,y,w,h,c],i)=>{
+    let dy=y<-14?bob:0;if(i===8||i===9)dy+=hand;
+    const xx=flip?x0-(x+w)*u:x0+x*u;R(xx,y0+(y+dy)*u,w*u,h*u,c);
+  });
+}
+function drawTitle(now){
+  if(!iw)return;
+  ctx.imageSmoothingEnabled=false;
+  const beat=now/1000*112/60,bp=beat%1,bi=Math.floor(beat),u=Math.max(1,Math.floor(Math.min(ih/88,iw/64)));
+  const ceil=Math.round(ih*.2),floorY=Math.round(ih*.86),cx=Math.round(iw/2),tableTop=floorY-15*u;
+  // teto de madeira com vigas
+  R(0,0,iw,ceil,'#5a3c25');
+  for(let y=0;y<ceil;y+=5){R(0,y,iw,1,'#3b2516');if((y/5)%2)R(0,y+1,iw,4,'#6b4a2e')}
+  for(let x=6;x<iw;x+=40)R(x,0,3,ceil,'#2e1c10');
+  // parede do fundo, luz verde de um lado
+  R(0,ceil,iw,floorY-ceil,'#cfc8c4');
+  for(let y=ceil;y<floorY;y+=2)R(Math.round(iw*.72),y,iw,1,y%4?'#a8d9a0':'#bfe3b5');
+  // emblema de estrelas na parede
+  [[.14,0],[.22,-4],[.30,0]].forEach(([fx,dy])=>{const x=Math.round(iw*fx),y=ceil+8+dy;R(x-2,y,5,1,'#ffffff');R(x-1,y-1,3,3,'#ffffff');R(x,y-3,1,7,'#ffffff');R(x-3,y,7,1,'#ffffff')});
+  // torcida: três fileiras, braços para cima no ritmo
+  seed=2024;
+  const rows=[];for(let y=tableTop-2*u;y>ceil+10*u;y-=6*u)rows.unshift(y);
+  rows.forEach((by,ri)=>{
+    const step=Math.round((6+ri)*u*.9);
+    for(let x=(ri%2)*3*u;x<iw;x+=step+Math.floor(rnd()*u*2)){
+      const tone=SKIN[Math.floor(rnd()*4)],shirt=['#1c1a22','#2a2d36','#c0392b','#f3f3f3','#1c1a22','#3a6fd8','#7a6a92'][Math.floor(rnd()*7)];
+      const hat=rnd(),ph=rnd()<.5,jump=((bi%2===0)!==ph)&&bp<.35?-u:0,up=rnd()<.7,y=by+jump;
+      R(x,y-5*u,5*u,6*u,shirt);R(x+u,y-8*u,3*u,3*u,tone);
+      if(hat<.25)R(x+u,y-9*u,3*u,u,'#c0392b');else if(hat<.4)R(x+u,y-9*u,3*u,2*u,'#15131a');else if(hat<.5)R(x,y-8*u,u,4*u,'#b5532c');
+      if(hat>.85)R(x+u,y-7*u,3*u,u,'#0b0716');
+      if(up){const sw=Math.round(Math.sin(now/180+x)*u);R(x-u+sw,y-11*u,u,6*u,tone);R(x+5*u+sw,y-11*u,u,6*u,tone);
+        if(rnd()<.15&&(now/300|0)%2)R(x+5*u+sw,y-12*u,u,u,'#ffffff')}
+    }
+  });
+  // grama sintética
+  R(0,floorY-3*u,iw,ih-floorY+3*u,'#3f8a3a');
+  for(let y=floorY-3*u;y<ih;y+=2)for(let x=(y/2)%2?0:2;x<iw;x+=4)R(x,y,1,1,'#55a24c');
+  // mesa com os dois teclados e o notebook
+  const tw=28*u;
+  for(let k=0;k<15*u;k++){R(cx-tw/2+3*u+Math.round(k*.6),tableTop+k,u,1,'#2b2b31');R(cx+tw/2-4*u-Math.round(k*.6),tableTop+k,u,1,'#2b2b31')}
+  R(cx-9*u,tableTop+2*u,18*u,8*u,'#141218');R(cx-5*u,tableTop+5*u,10*u,u,'#2de2c4');R(cx-3*u,tableTop+7*u,6*u,u,'#2de2c4');
+  R(cx-tw/2,tableTop,tw,2*u,'#1a1a1f');
+  [[cx-tw/2+u,1],[cx+2*u,-1]].forEach(([x])=>{const w=tw/2-3*u;R(x,tableTop-2*u,w,2*u,'#18181c');R(x+u,tableTop-3*u,w-2*u,u,'#f2f2f2');
+    for(let k=x+2*u;k<x+w-2*u;k+=Math.max(2,2*u))R(k,tableTop-3*u,Math.max(1,u>>1)||1,u,'#111');R(x+u,tableTop-u,u,u,(now/400|0)%2?'#ff3d8b':'#9be564')});
+  R(cx-4*u,tableTop-10*u,8*u,6*u,'#c9ccd2');R(cx-3*u,tableTop-9*u,2*u,2*u,'#2de2c4');R(cx+u,tableTop-8*u,2*u,u,'#ff3d8b');R(cx-u,tableTop-4*u,2*u,2*u,'#8a8f99');
+  // os dois tecladistas, cada um balançando num tempo
+  const b1=(bi%2===0&&bp<.4)?1:0,b2=(bi%2===1&&bp<.4)?1:0,h1=Math.round(Math.sin(now/90))*1,h2=Math.round(Math.cos(now/85))*1;
+  sprite(P1,cx-tw/2-7*u,floorY,u,false,b1,h1);
+  sprite(P2,cx+tw/2+7*u,floorY,u,true,b2,h2);
+  // barra de luta no topo
+  const nick=(($('nick').value||'').trim()||'VOCÊ').toUpperCase().slice(0,12),bw=Math.round(iw*.4),by=4;
+  const grad=(x,w,dir)=>{for(let i=0;i<w;i++){const f=i/w;R(dir>0?x+i:x+w-1-i,by+9,1,6,f<.6?'#ffd23f':f<.85?'#ff8c42':'#ff3d8b')}};
+  R(2,by+8,bw+2,8,'#0b0716');grad(3,bw,1);R(iw-bw-4,by+8,bw+2,8,'#0b0716');grad(iw-bw-3,bw,-1);
+  R(cx-9,by+6,18,12,'#0b0716');R(cx-8,by+7,16,10,'#2a4fb0');
+  ctx.font='8px "Press Start 2P", monospace';ctx.textBaseline='top';
+  [[cx-6,0],[cx+1,0]].forEach(([x])=>{R(x+1,by+9,3,1,'#fff');R(x+1,by+13,3,1,'#fff');R(x,by+10,1,3,'#fff');R(x+4,by+10,1,3,'#fff')});
+  txt(nick,3,by-2+0,'#f7ecd0',8,'left');txt('5 RIVAIS',iw-3,by-2,'#f7ecd0',8,'right');
+}
+
 let lastF=performance.now();
 function frame(now){
   requestAnimationFrame(frame);
@@ -1025,7 +1140,7 @@ function frame(now){
     if(t>G.chart.end)finish();
   }else if(G.chart&&G.state==='pause')t=G.pausedAt;
   else if(G.chart&&G.state==='results')t=songNow();
-  draw(t,dt,now);hud();
+  if(G.state==='menu'||G.state==='intro')drawTitle(now);else draw(t,dt,now);hud();
 }
 let hudCache='';
 function hud(){
